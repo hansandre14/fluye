@@ -1,0 +1,14 @@
+---
+import RecoveryLayout from '../layouts/RecoveryLayout.astro';
+Astro.response.headers.set('Cache-Control', 'no-store');
+---
+<RecoveryLayout title="Recupera tu contraseña" description="Escribe tu correo y te enviaremos un enlace para crear una contraseña nueva.">
+  <form method="post" action="/api/auth/recuperar" data-recovery>
+    <div class="field">
+      <label for="recovery-email">Correo electrónico</label>
+      <div class="input-wrap"><input id="recovery-email" type="email" name="email" autocomplete="email" maxlength="254" placeholder="nombre@correo.com" required /></div>
+    </div>
+    <p class="status-message" role="status" data-recovery-status hidden></p>
+    <button class="primary-button" type="submit">Enviar enlace</button>
+  </form>
+</RecoveryLayout>

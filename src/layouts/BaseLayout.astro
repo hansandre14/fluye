@@ -1,0 +1,79 @@
+---
+import '@fontsource-variable/fredoka';
+import '@fontsource-variable/nunito';
+import '../styles/global.css';
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="es-PE" data-theme="light">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" /><meta name="theme-color" content="#0f766e" />
+    <title>{title}</title>
+    <script is:inline>
+      (() => {
+        try {
+          const savedTheme = localStorage.getItem('fluye_theme');
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : (prefersDark ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+          const muted = localStorage.getItem('fluye_mute_audio') === '1';
+          document.documentElement.dataset.audioMuted = String(muted);
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <button
+      type="button"
+      class="global-theme-fab"
+      data-theme-toggle
+      aria-label="Cambiar entre modo claro y modo oscuro"
+      title="Cambiar tema (Claro / Oscuro)"
+    >
+      <span data-theme-icon aria-hidden="true">🌙</span>
+      <span data-theme-label>Oscuro</span>
+    </button>
+    <slot />
+    <script is:inline>
+      (() => {
+        function syncThemeButtons() {
+          const isDark = document.documentElement.dataset.theme === 'dark';
+          for (const btn of document.querySelectorAll('[data-theme-toggle]')) {
+            btn.setAttribute('aria-pressed', String(isDark));
+            const icon = btn.querySelector('[data-theme-icon]');
+            const label = btn.querySelector('[data-theme-label]');
+            if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+            if (label) label.textContent = isDark ? 'Claro' : 'Oscuro';
+          }
+          const isMuted = document.documentElement.dataset.audioMuted === 'true';
+          for (const btn of document.querySelectorAll('[data-audio-toggle]')) {
+            btn.setAttribute('aria-pressed', String(!isMuted));
+            const icon = btn.querySelector('[data-audio-icon]');
+            const label = btn.querySelector('[data-audio-label]');
+            if (icon) icon.textContent = isMuted ? '🔇' : '🔊';
+            if (label) label.textContent = isMuted ? 'Sin sonido' : 'Sonido';
+          }
+        }
+        document.addEventListener('click', (event) => {
+          const themeBtn = event.target.closest?.('[data-theme-toggle]');
+          if (themeBtn) {
+            const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.dataset.theme = next;
+            try { localStorage.setItem('fluye_theme', next); } catch {}
+            syncThemeButtons();
+            return;
+          }
+          const audioBtn = event.target.closest?.('[data-audio-toggle]');
+          if (audioBtn) {
+            const nextMuted = document.documentElement.dataset.audioMuted !== 'true';
+            document.documentElement.dataset.audioMuted = String(nextMuted);
+            try { localStorage.setItem('fluye_mute_audio', nextMuted ? '1' : '0'); } catch {}
+            syncThemeButtons();
+          }
+        });
+        syncThemeButtons();
+      })();
+    </script>
+  </body>
+</html>

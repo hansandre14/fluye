@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+import { currentUser } from '../server/auth.js';
+Astro.response.headers.set('Cache-Control', 'no-store');
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+---
+<BaseLayout title="Acceso verificado | Fluye">
+  <main class="session-page"><section class="session-card" aria-labelledby="success-title">
+    <Brand /><h1 id="success-title">¡Bienvenido, {user.name}!</h1>
+    <p>Has iniciado sesión con <strong>{user.email}</strong>. Tu cuenta y tu sesión están guardadas.</p>
+    <p><a href="/dashboard">Ir a mi Dashboard</a></p>
+    <form action="/api/auth/logout" method="post"><button class="primary-button" type="submit">Cerrar sesión</button></form>
+  </section></main>
+</BaseLayout>

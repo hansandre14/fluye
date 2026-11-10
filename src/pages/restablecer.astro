@@ -1,0 +1,21 @@
+---
+import RecoveryLayout from '../layouts/RecoveryLayout.astro';
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('Referrer-Policy', 'no-referrer');
+---
+<RecoveryLayout title="Crea una contraseña nueva" description="Elige una contraseña de al menos 10 caracteres.">
+  <form method="post" action="/api/auth/restablecer" data-recovery data-reset>
+    <input type="hidden" name="token" />
+    <div class="field">
+      <label for="reset-password">Contraseña nueva</label>
+      <div class="input-wrap"><input id="reset-password" type="password" name="password" autocomplete="new-password" minlength="10" maxlength="128" required /></div>
+    </div>
+    <div class="field">
+      <label for="reset-confirm">Repite tu contraseña</label>
+      <div class="input-wrap"><input id="reset-confirm" type="password" name="confirm" autocomplete="new-password" minlength="10" maxlength="128" required /></div>
+    </div>
+    <p class="status-message" role="status" data-recovery-status hidden></p>
+    <button class="primary-button" type="submit" disabled>Guardar contraseña</button>
+    <p class="signup"><a class="text-button" href="/recuperar">Solicitar otro enlace</a></p>
+  </form>
+</RecoveryLayout>

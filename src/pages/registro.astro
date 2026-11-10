@@ -1,0 +1,112 @@
+---
+import FinanceLayout from '../layouts/FinanceLayout.astro';
+import FinanceNotice from '../components/FinanceNotice.astro';
+import MovementDialog from '../components/MovementDialog.astro';
+import { currentUser } from '../server/auth.js';
+import { privacyMode } from '../server/finance-http.js';
+import { dashboardData } from '../server/movements.js';
+import { ACCOUNTS, accountFrom, dateLabel, soles } from '../lib/finance.js';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+const account = accountFrom(Astro.url.searchParams.get('cuenta'));
+const isPro = account === 'profesional';
+const hidden = privacyMode(Astro.cookies);
+const data = await dashboardData(user.id, account);
+const returnTo = '/registro?cuenta=' + account;
+
+const quickTemplates = isPro
+  ? [
+      { kind: 'ingreso', concept: 'Honorarios profesionales', category: 'Honorarios', label: '+ Honorarios' },
+      { kind: 'ingreso', concept: 'Venta a cliente', category: 'Ventas', label: '+ Venta / Cobro' },
+      { kind: 'gasto', concept: 'Suscripción de software', category: 'Servicios', label: '− Software / Internet' },
+      { kind: 'gasto', concept: 'Movilidad / Visita a cliente', category: 'Transporte', label: '− Movilidad' },
+      { kind: 'gasto', concept: 'Insumos de oficina', category: 'Compras', label: '− Insumos' },
+    ]
+  : [
+      { kind: 'gasto', concept: 'Almuerzo / Menú', category: 'Alimentación', label: '− Almuerzo' },
+      { kind: 'gasto', concept: 'Transporte / Pasaje', category: 'Transporte', label: '− Transporte' },
+      { kind: 'gasto', concept: 'Compras del hogar', category: 'Alimentación', label: '− Supermercado' },
+      { kind: 'gasto', concept: 'Recibo de servicios', category: 'Servicios', label: '− Servicios' },
+      { kind: 'ingreso', concept: 'Sueldo / Quincena', category: 'Salario', label: '+ Sueldo / Ingreso' },
+    ];
+---
+<FinanceLayout
+  title="Centro de registro"
+  subtitle={`Registro manual asistido · Cuenta ${ACCOUNTS[account].toLowerCase()}`}
+  {user}
+  {account}
+  {hidden}
+  page="/registro"
+  {returnTo}
+>
+  <FinanceNotice code={Astro.url.searchParams.get('aviso')} {returnTo} />
+
+  <section class="registro-status-strip" aria-label="Estado de tu presupuesto hoy">
+    <article class="finance-card registro-stat">
+      <span>{isPro ? 'Disponible operativo hoy' : 'Disponible para gastar hoy'}</span>
+      <strong>{soles(data.available, hidden)}</strong>
+      <small>De tu límite diario de {soles(data.limit, hidden)}</small>
+    </article>
+    <article class="finance-card registro-stat">
+      <span>Gastado hoy ({dateLabel(data.date)})</span>
+      <strong>{soles(data.todaySpent, hidden)}</strong>
+      <small>{data.todaySpent > data.limit ? 'Superaste el tope de hoy' : 'Dentro de tu límite diario'}</small>
+    </article>
+    <article class="finance-card registro-stat">
+      <span>{isPro ? 'Caja neta del mes' : 'Saldo acumulado del mes'}</span>
+      <strong>{soles(data.balance, hidden)}</strong>
+      <small>Ingresos: {soles(data.income, hidden)} · Gastos: {soles(data.expenses, hidden)}</small>
+    </article>
+  </section>
+
+  <section class="finance-card registro-templates" aria-label="Plantillas rápidas">
+    <div class="registro-templates-head">
+      <strong>⚡ Plantillas rápidas ({ACCOUNTS[account]})</strong>
+      <span>Toca una opción para autocompletar concepto y categoría en el formulario:</span>
+    </div>
+    <div class="registro-chips">
+      {quickTemplates.map((tpl) => (
+        <button
+          type="button"
+          class:list={['template-chip', { 'template-income': tpl.kind === 'ingreso' }]}
+          data-quick-template
+          data-tpl-kind={tpl.kind}
+          data-tpl-concept={tpl.concept}
+          data-tpl-category={tpl.category}
+        >
+          {tpl.label}
+        </button>
+      ))}
+    </div>
+  </section>
+
+  <div class="registro-workspace">
+    <MovementDialog userId={user.id} {account} returnTo={'/dashboard?cuenta=' + account} standalone />
+    <aside class="finance-card registro-recent" aria-label="Últimos registros de esta cuenta">
+      <div class="card-heading">
+        <h2>Últimos registros</h2>
+        <a class="finance-link" href={'/movimientos?cuenta=' + account}>Historial</a>
+      </div>
+      {data.recent.length ? (
+        <ul class="recent-list">
+          {data.recent.slice(0, 5).map((row) => (
+            <li>
+              <span class="movement-initial" aria-hidden="true">{row.concept[0].toUpperCase()}</span>
+              <span class="recent-concept">
+                <strong>{row.concept}</strong>
+                <small>{dateLabel(row.date)} · {row.category}</small>
+              </span>
+              <strong class:list={['amount-text', { positive: row.kind === 'ingreso' }]}>
+                {row.kind === 'ingreso' ? '+' : '−'} {soles(row.amount, hidden)}
+              </strong>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="empty-copy">Aún no hay movimientos registrados en tu cuenta {ACCOUNTS[account].toLowerCase()}.</p>
+      )}
+    </aside>
+  </div>
+</FinanceLayout>

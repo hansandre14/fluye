@@ -1,0 +1,90 @@
+---
+import FinanceLayout from '../layouts/FinanceLayout.astro';
+import FinanceNotice from '../components/FinanceNotice.astro';
+import MovementDialog from '../components/MovementDialog.astro';
+import { currentUser } from '../server/auth.js';
+import { privacyMode } from '../server/finance-http.js';
+import { dashboardData } from '../server/movements.js';
+import { ACCOUNTS, accountFrom, dateLabel, soles } from '../lib/finance.js';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+const account = accountFrom(Astro.url.searchParams.get('cuenta'));
+const isPro = account === 'profesional';
+const hidden = privacyMode(Astro.cookies);
+const data = await dashboardData(user.id, account);
+const remaining = Math.round(100 * data.available / data.limit);
+const over = data.todaySpent > data.limit;
+const firstName = user.name.trim().split(/\s+/)[0];
+const returnTo = '/dashboard?cuenta=' + account;
+const metrics = [
+  { label: isPro ? 'Caja neta' : 'Saldo total', amount: data.balance, hint: isPro ? 'Facturación menos egresos' : 'Ingresos menos gastos acumulados' },
+  { label: isPro ? 'Ingresos / Ventas' : 'Ingresos', amount: data.income, hint: 'Este mes' },
+  { label: isPro ? 'Gastos operativos' : 'Gastos', amount: data.expenses, hint: 'Este mes' },
+];
+const subtitle = isPro
+  ? ` Flujo de caja y tope operativo · ${dateLabel(data.date, true)}`
+  : `Así va tu alcancía personal hoy · ${dateLabel(data.date, true)}`;
+---
+<FinanceLayout title={`¡Hola, ${firstName}!`} subtitle={subtitle.trim()} {user} {account} {hidden} page="/dashboard" {returnTo}>
+  <FinanceNotice code={Astro.url.searchParams.get('aviso')} {returnTo} />
+  <div class="dashboard-grid">
+    <div class="dashboard-column">
+      <section class="finance-card spending-hero" aria-labelledby="spending-title">
+        <div class="spending-top"><h2 id="spending-title">{isPro ? 'Presupuesto operativo para hoy' : 'Para gastar hoy'}</h2>
+          {!hidden && <button type="button" class="finance-link" data-open-dialog="limit-dialog">Ajustar límite</button>}
+        </div>
+        <strong class="hero-number" data-testid="available">{soles(data.available, hidden)}</strong>
+        <p>De tu {isPro ? 'tope operativo diario' : 'alcancía diaria'} de {soles(data.limit, hidden)} · Hoy gastaste {soles(data.todaySpent, hidden)}</p>
+        {!hidden && <div class="hero-progress">
+          <progress max="100" value={remaining} aria-label="Porcentaje disponible del límite diario"></progress>
+          <span>{remaining} % disponible</span>
+        </div>}
+        {over && !hidden && <p class="finance-error">Superaste el límite diario en {soles(data.todaySpent - data.limit)}.</p>}
+      </section>
+      <div class="finance-metrics">
+        {metrics.map(({ label, amount, hint }) => <section class="finance-card metric">
+          <h2>{label}</h2><strong>{soles(amount, hidden)}</strong><p>{hint}</p>
+        </section>)}
+      </div>
+      <section class="finance-card envelopes">
+        <div class="card-heading"><h2>{isPro ? 'Centros de gasto del mes' : 'Tus sobres del mes'}</h2><span>Gasto por categoría</span></div>
+        {data.groups.length ? <ul>
+          {data.groups.slice(0, 4).map(({ category, amount }, i) => <li class={'envelope-' + i}>
+            <span class="envelope-dot" aria-hidden="true"></span><span>{category}</span><strong>{soles(amount, hidden)}</strong>
+          </li>)}
+        </ul> : <p class="empty-copy">Cuando registres un gasto, verás cómo se distribuye por categoría.</p>}
+      </section>
+    </div>
+    <div class="dashboard-column">
+      <section class="finance-card recent-card">
+        <div class="card-heading"><h2>{isPro ? 'Últimas operaciones' : 'Lo último que pasó'}</h2><a class="finance-link" href={'/movimientos?cuenta=' + account}>Ver todos</a></div>
+        {data.recent.length ? <ul class="recent-list">
+          {data.recent.map((row) => <li>
+            <span class="movement-initial" aria-hidden="true">{row.concept[0].toUpperCase()}</span>
+            <span class="recent-concept"><strong>{row.concept}</strong><small>{dateLabel(row.date)} · {row.category}</small></span>
+            <strong class:list={['amount-text', { positive: row.kind === 'ingreso' }]}>{row.kind === 'ingreso' ? '+' : '−'} {soles(row.amount, hidden)}</strong>
+          </li>)}
+        </ul> : <div class="finance-empty"><span class="empty-icon" aria-hidden="true">↗</span><h3>Aún no hay movimientos</h3><p>Anota tu primer ingreso o gasto de la cuenta {ACCOUNTS[account].toLowerCase()}.</p><button type="button" class="finance-link" data-open-dialog="movement-dialog">Registrar un movimiento</button></div>}
+      </section>
+      <section class="finance-card quick-add">
+        <h2>¿Qué quieres anotar?</h2>
+        <button type="button" class="quick-tile active-tile quick-manual" data-open-dialog="movement-dialog">
+          <span class="quick-icon" aria-hidden="true">+</span>
+          <span><strong>Registro manual</strong><small>{isPro ? 'Anota un cobro, venta o gasto operativo' : 'Anota un ingreso o un gasto'}</small></span>
+        </button>
+      </section>
+    </div>
+  </div>
+  <MovementDialog userId={user.id} {account} {returnTo} />
+  {!hidden && <dialog class="finance-dialog" id="limit-dialog" aria-labelledby="limit-title">
+    <header class="dialog-heading"><div><h2 id="limit-title">Ajustar límite diario</h2><p>Este límite se aplica a tu cuenta {ACCOUNTS[account].toLowerCase()}.</p></div><button class="dialog-x" type="button" aria-label="Cerrar" data-close-dialog>×</button></header>
+    <form action="/api/preferencias" method="post" data-mutation>
+      <input type="hidden" name="action" value="limit" /><input type="hidden" name="account" value={account} /><input type="hidden" name="returnTo" value={returnTo} />
+      <label class="finance-field"><span>Límite diario en soles</span><input name="amount" inputmode="decimal" value={(data.limit / 100).toFixed(2)} maxlength="10" pattern="[0-9]{1,7}([.,][0-9]{1,2})?" required /></label>
+      <p class="finance-error" data-form-error role="alert" hidden></p>
+      <footer class="dialog-actions"><button type="button" class="finance-pill" data-close-dialog>Cancelar</button><button type="submit" class="primary-button">Guardar límite</button></footer>
+    </form>
+  </dialog>}
+</FinanceLayout>

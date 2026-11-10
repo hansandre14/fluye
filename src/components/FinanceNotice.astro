@@ -1,0 +1,29 @@
+---
+const { code, undoId = '', undoMs = 0, returnTo } = Astro.props;
+const labels = {
+  creado: 'Movimiento guardado correctamente.',
+  editado: 'Movimiento actualizado.',
+  eliminado: undoMs > 0 ? 'Eliminando movimiento · Puedes deshacer esta acción' : 'Movimiento eliminado.',
+  restaurado: 'Movimiento restaurado en tu historial.',
+  limite: 'Límite diario actualizado.',
+};
+const message = Object.hasOwn(labels, code) ? labels[code] : '';
+const durationMs = undoMs > 0 ? undoMs : 4000;
+const initialSeconds = Math.max(1, Math.ceil(durationMs / 1000));
+---
+{message && <div class:list={['finance-notice', { 'finance-notice-undo': undoMs > 0 }]} data-notice-toast data-duration-ms={durationMs} style={`--toast-duration: ${durationMs}ms`}>
+  <div class="notice-body">
+    <span class="notice-dot" aria-hidden="true"></span>
+    <span class="notice-text" role="status" aria-live="polite">{message}</span>
+    {undoMs > 0 && <span class="notice-countdown" data-undo-seconds aria-hidden="true">{initialSeconds}s</span>}
+    {undoMs > 0 && <form action="/api/movimientos" method="post" data-mutation data-undo-ms={undoMs} class="notice-undo-form">
+      <input type="hidden" name="action" value="deshacer" />
+      <input type="hidden" name="id" value={undoId} />
+      <input type="hidden" name="returnTo" value={returnTo} />
+      <button class="finance-link notice-undo-btn" type="submit">Deshacer</button>
+      <p class="finance-error" data-form-error role="alert" hidden></p>
+    </form>}
+    <button type="button" class="notice-close" aria-label="Cerrar aviso" data-close-notice>×</button>
+  </div>
+  <div class="notice-timer-track" aria-hidden="true"><div class="notice-timer-bar"></div></div>
+</div>}

@@ -1,0 +1,24 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+const { title, description } = Astro.props;
+---
+<BaseLayout title={title + ' | Fluye'}>
+  <main class="access recovery-access">
+    <aside class="intro" aria-label="Fluye">
+      <Brand />
+      <div class="intro-copy"><h1>Tu dinero,<br />más claro.</h1><p>Recupera el acceso a tu alcancía.</p></div>
+    </aside>
+    <section class="login-area" aria-labelledby="recovery-heading">
+      <div class="login-panel">
+        <header class="login-heading">
+          <h2 id="recovery-heading">{title}</h2>
+          <p>{description}</p>
+        </header>
+        <slot />
+        <p class="signup"><a class="text-button" href="/">← Volver a iniciar sesión</a></p>
+      </div>
+    </section>
+  </main>
+  <script>import '../scripts/recovery.js';</script>
+</BaseLayout>

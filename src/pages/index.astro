@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+import { currentUser } from '../server/auth.js';
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (Astro.locals.user ?? await currentUser(Astro)) return Astro.redirect('/dashboard');
+const accountCreated = Astro.url.searchParams.get('cuenta') === 'creada';
+const passwordReset = Astro.url.searchParams.get('clave') === 'actualizada';
+const statusMessage = accountCreated ? 'Tu cuenta ya está guardada. Inicia sesión con tu correo y contraseña.'
+  : passwordReset ? 'Tu contraseña fue actualizada. Inicia sesión con la nueva.' : '';
+---
+<BaseLayout title="Inicia sesión | Fluye">
+  <main class="access">
+    <aside class="intro" aria-label="Conoce Fluye">
+      <Brand />
+      <div class="intro-copy">
+        <h1>Tu dinero,<br />más claro.</h1>
+        <p>Registra tus ingresos y gastos. Fluye te muestra<br class="desktop-break" /> cuánto te queda de tu límite diario.</p>
+      </div>
+      <div class="daily-example" aria-label="Ejemplo ilustrativo: 87 soles disponibles de 150 soles al día">
+        <span class="daily-label">Para gastar hoy</span>
+        <div class="daily-amount"><strong>S/ 87</strong><span>de S/ 150 al día</span></div>
+        <div class="budget-bar" aria-hidden="true"><span></span></div>
+      </div>
+      <ul class="benefits">
+        <li>Acceso con contraseña protegida</li>
+        <li>Registro de ingresos y gastos</li>
+        <li>Historial con filtros y exportación a CSV</li>
+      </ul>
+    </aside>
+    <section class="login-area" aria-labelledby="login-title">
+      <div class="login-panel">
+        <header class="login-heading"><h2 id="login-title">Inicia sesión</h2><p>Bienvenido de nuevo. Ingresa tus datos para continuar.</p></header>
+        <form id="login-form" action="/api/auth/login" method="post" novalidate>
+          <div class="field">
+            <label for="email">Correo electrónico</label>
+            <div class="input-wrap"><input id="email" name="email" type="email" placeholder="nombre@correo.com" autocomplete="username" required maxlength="254" aria-describedby="email-feedback" /><span id="email-check" class="email-check" aria-hidden="true" hidden>✓</span></div>
+            <p id="email-feedback" class="field-feedback" hidden></p>
+          </div>
+          <div class="field password-field">
+            <label for="password">Contraseña</label>
+            <div class="input-wrap"><input id="password" name="password" type="password" placeholder="Tu contraseña" autocomplete="current-password" required maxlength="128" aria-describedby="password-feedback" /><button id="toggle-password" type="button" aria-controls="password" aria-pressed="false">Mostrar</button></div>
+            <p id="password-feedback" class="field-feedback" hidden></p>
+          </div>
+          <div class="form-options">
+            <label class="remember"><input type="checkbox" name="remember" id="remember" /> <span>Recordarme</span></label>
+            <a class="text-button" href="/recuperar">¿Olvidaste tu contraseña?</a>
+          </div>
+          <p id="login-status" class:list={['status-message', { 'status-success': statusMessage }]} role="status" aria-live="polite" hidden={!statusMessage}>{statusMessage}</p>
+          <button id="submit-login" class="primary-button" type="submit"><span class="spinner" aria-hidden="true" hidden></span><span id="submit-label">Iniciar sesión</span></button>
+          <noscript><p>Activa JavaScript para ver la validación de los campos y los estados del acceso.</p></noscript>
+        </form>
+        <p class="signup">¿No tienes cuenta? <button type="button" class="text-button" data-open-setup>Crear cuenta</button></p>
+      </div>
+    </section>
+  </main>
+  <dialog id="setup-dialog" aria-labelledby="setup-title">
+    <h2 id="setup-title">Crear cuenta</h2>
+    <p>Elige el correo y la contraseña que usarás para entrar a Fluye.</p>
+    <form id="setup-form" action="/api/auth/setup" method="post">
+      <div class="field"><label for="setup-name">Tu nombre</label><div class="input-wrap"><input id="setup-name" name="name" autocomplete="name" minlength="2" maxlength="80" required /></div></div>
+      <div class="field"><label for="setup-email">Tu correo electrónico</label><div class="input-wrap"><input id="setup-email" name="email" type="email" autocomplete="username" maxlength="254" required /></div></div>
+      <div class="field"><label for="setup-password">Elige tu contraseña</label><div class="input-wrap"><input id="setup-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" aria-describedby="setup-password-help" required /></div><p id="setup-password-help" class="password-help">Usa al menos 10 caracteres.</p></div>
+      <div class="field"><label for="setup-confirm">Repite tu contraseña</label><div class="input-wrap"><input id="setup-confirm" name="confirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" required /></div></div>
+      <p id="setup-status" class="status-message" role="status" hidden></p>
+      <button class="primary-button" type="submit" id="setup-submit">Guardar mi cuenta</button>
+      <button class="text-button setup-cancel" type="button" id="setup-cancel">Cancelar</button>
+    </form>
+  </dialog>
+  <script>import '../scripts/login.js'; import '../scripts/setup.js';</script>
+</BaseLayout>

@@ -1,0 +1,68 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import '../styles/finance.css';
+import { ACCOUNTS } from '../lib/finance.js';
+const { title, subtitle, user, account, hidden, page, returnTo } = Astro.props;
+const initials = user.name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
+const accountQuery = '?cuenta=' + account;
+const isPro = account === 'profesional';
+---
+<BaseLayout title={title + ' | Fluye'}>
+  <div class="finance-shell" data-account-theme={account}>
+    <header class="finance-header">
+      <div class="finance-heading">
+        <span class="account-badge" data-account-badge={account}>
+          <span class="account-badge-dot" aria-hidden="true"></span>
+          {isPro ? 'Cuenta Profesional · Negocio y honorarios' : 'Cuenta Personal · Finanzas del día a día'}
+        </span>
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
+      </div>
+      <div class="finance-controls">
+        <button
+          type="button"
+          class="finance-pill theme-toggle-pill"
+          data-theme-toggle
+          aria-pressed="false"
+          aria-label="Cambiar entre modo claro y modo oscuro"
+          title="Cambiar entre modo claro y oscuro"
+        >
+          <span data-theme-icon aria-hidden="true">🌙</span>
+          <span data-theme-label>Oscuro</span>
+        </button>
+        <button
+          type="button"
+          class="finance-pill audio-toggle-pill"
+          data-audio-toggle
+          aria-pressed="true"
+          aria-label="Activar o silenciar sonidos de confirmación (WCAG 1.4.2)"
+          title="Control de sonido para alertas (WCAG 1.4.2)"
+        >
+          <span data-audio-icon aria-hidden="true">🔊</span>
+          <span data-audio-label>Sonido</span>
+        </button>
+        <form method="post" action="/api/preferencias">
+          <input type="hidden" name="action" value="privacy" />
+          <input type="hidden" name="hidden" value={hidden ? '0' : '1'} />
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <button class="finance-pill privacy-toggle" type="submit" aria-pressed={String(hidden)}>
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.6"/>{hidden && <path d="m4 4 16 16"/>}</svg>
+            {hidden ? 'Mostrar montos' : 'Ocultar montos'}
+          </button>
+        </form>
+        <nav class="account-switch" aria-label="Tipo de cuenta">
+          {Object.entries(ACCOUNTS).map(([key, label]) => <a href={page + '?cuenta=' + key} aria-current={key === account ? 'page' : undefined}>{label}</a>)}
+        </nav>
+        <span class="finance-avatar" title={user.name} aria-label={user.name}>{initials}</span>
+      </div>
+    </header>
+    <main id="finance-main"><slot /></main>
+    <nav class="finance-nav" aria-label="Navegación principal">
+      <a href={'/dashboard' + accountQuery} aria-current={page === '/dashboard' ? 'page' : undefined}>Inicio</a>
+      <a href={'/registro' + accountQuery} aria-current={page === '/registro' ? 'page' : undefined}>Registrar</a>
+      <a href={'/movimientos' + accountQuery} aria-current={page === '/movimientos' ? 'page' : undefined}>Movimientos</a>
+      <form action="/api/auth/logout" method="post"><button type="submit">Salir</button></form>
+    </nav>
+  </div>
+  <script>import '../scripts/finance.js';</script>
+</BaseLayout>

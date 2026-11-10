@@ -1,0 +1,62 @@
+---
+import { randomUUID } from 'node:crypto';
+import { ACCOUNTS, CATEGORIES, KINDS, dateLabel, today } from '../lib/finance.js';
+import { movementDefaults } from '../server/movements.js';
+const { userId, account, returnTo, movement = null, standalone = false } = Astro.props;
+const Container = standalone ? 'section' : 'dialog';
+const date = today();
+const kind = movement?.kind ?? 'gasto';
+const selectedAccount = movement?.account ?? account;
+const defaults = Object.fromEntries(await Promise.all(Object.keys(ACCOUNTS).map(async (key) => [key, await movementDefaults(userId, key)])));
+const suggested = defaults[selectedAccount].categories[kind];
+---
+<Container class={standalone ? 'finance-card movement-standalone' : 'finance-dialog movement-dialog'} id="movement-dialog" aria-labelledby="movement-title" data-auto-open={movement ? 'true' : undefined} data-return={movement ? returnTo : undefined}>
+  <header class="dialog-heading">
+    <div><h2 id="movement-title">{movement ? 'Editar movimiento' : 'Anotar un movimiento'}</h2><p>Menos pasos, siempre con el control de tus datos.</p></div>
+    {!standalone && <button class="dialog-x" type="button" aria-label="Cerrar formulario" data-close-dialog>×</button>}
+  </header>
+  <form method="post" action="/api/movimientos" data-mutation data-movement-form data-defaults={JSON.stringify(defaults)} data-account={account} data-today={date} data-today-label={dateLabel(date)}>
+    <input type="hidden" name="action" value={movement ? 'editar' : 'crear'} />
+    <input type="hidden" name="id" value={movement?.id ?? randomUUID()} />
+    <input type="hidden" name="returnTo" value={returnTo} />
+    <div class="movement-dialog-grid">
+      <div class="movement-fields">
+        <fieldset class="segments movement-kind">
+          <legend class="visually-hidden">Tipo de movimiento</legend>
+          {Object.entries(KINDS).map(([key, label]) => <label><input type="radio" name="kind" value={key} checked={key === kind} /><span>{label}</span></label>)}
+        </fieldset>
+        <label class="finance-field"><span>Monto <small>· obligatorio</small></span>
+          <span class="money-input"><span aria-hidden="true">S/</span><input name="amount" inputmode="decimal" placeholder="Ingresa el monto" required maxlength="10" pattern="[0-9]{1,7}([.,][0-9]{1,2})?" value={movement ? (movement.amount / 100).toFixed(2) : ''} autofocus /></span>
+          <small>Escribe un monto positivo. Se aceptan hasta dos decimales.</small>
+        </label>
+        <label class="finance-field"><span>Concepto</span><input name="concept" list="concept-history" maxlength="80" placeholder="¿En qué gastaste?" value={movement?.concept ?? ''} required /><small>Escríbelo o elige un concepto de tu historial.</small></label>
+        <datalist id="concept-history">{defaults[selectedAccount].concepts.map((concept) => <option value={concept} />)}</datalist>
+        <div class="field-pair">
+          <label class="finance-field"><span>Categoría</span><select name="category" required>
+            <option value="">Elige una categoría</option>
+            {Object.entries(CATEGORIES).flatMap(([type, categories]) => categories.map((category) => <option value={category} data-kind={type} hidden={type !== kind} disabled={type !== kind} selected={category === (movement?.category ?? suggested)}>{category}</option>))}
+          </select><small data-category-hint>{suggested && !movement ? 'Sugerida por tu último movimiento. Puedes cambiarla.' : 'Elige la categoría que corresponda.'}</small></label>
+          <label class="finance-field"><span>Fecha</span><input type="date" name="date" max={date} value={movement?.date ?? date} required /><small>Puedes cambiar la fecha.</small></label>
+        </div>
+        <fieldset class="segments movement-account"><legend>Cuenta</legend>
+          {Object.entries(ACCOUNTS).map(([key, label]) => <label><input type="radio" name="account" value={key} checked={key === selectedAccount} /><span>{label}</span></label>)}
+        </fieldset>
+        <label class="finance-field"><span>Nota <small>· opcional</small></span><textarea name="note" rows="2" maxlength="400" placeholder="Agrega algún detalle">{movement?.note ?? ''}</textarea></label>
+      </div>
+      <aside class="movement-tips">
+        <strong>✧ Un buen punto de partida</strong>
+        <p>Te mostramos de dónde viene cada dato para que no tengas que recordarlo.</p>
+        <dl><dt data-tip-date-label>{movement ? 'Fecha registrada' : 'Hoy'}</dt><dd data-tip-date>{dateLabel(movement?.date ?? date)}</dd>
+          <dt data-tip-account>{ACCOUNTS[selectedAccount]}</dt><dd>Cuenta que seleccionaste para este movimiento.</dd>
+          <dt data-tip-category>{movement?.category ?? suggested ?? 'Categoría'}</dt><dd>Si tienes historial, sugerimos la categoría del último movimiento de este tipo.</dd>
+        </dl>
+        <strong>Todos estos datos siguen siendo editables.</strong>
+      </aside>
+    </div>
+    <p class="finance-error" data-form-error role="alert" hidden></p>
+    <footer class="dialog-actions">
+      {standalone ? <a class="finance-pill" href={returnTo}>Cancelar</a> : <button class="finance-pill" type="button" data-close-dialog>Cancelar</button>}
+      <button class="primary-button" type="submit" data-entry-submit>{movement ? 'Guardar cambios' : 'Guardar movimiento'}</button>
+    </footer>
+  </form>
+</Container>

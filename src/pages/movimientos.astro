@@ -1,0 +1,135 @@
+---
+import FinanceLayout from '../layouts/FinanceLayout.astro';
+import FinanceNotice from '../components/FinanceNotice.astro';
+import MovementDialog from '../components/MovementDialog.astro';
+import DeleteButton from '../components/DeleteButton.astro';
+import { currentUser } from '../server/auth.js';
+import { financeReturn, privacyMode } from '../server/finance-http.js';
+import { listMovements, movementById, readFilters, undoRemaining } from '../server/movements.js';
+import { ACCOUNTS, ALL_CATEGORIES, KINDS, accountFrom, dateLabel, soles } from '../lib/finance.js';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+const params = Astro.url.searchParams;
+const account = accountFrom(params.get('cuenta'));
+const hidden = privacyMode(Astro.cookies);
+const { filters, error } = readFilters(params);
+const { rows, total, page, pages, offset } = error ? { rows: [], total: 0, page: 1, pages: 1, offset: 0 } : await listMovements(user.id, account, filters, params.get('pagina'));
+const clearPath = '/movimientos?cuenta=' + account;
+const current = financeReturn(Astro.url.href, Astro.url.origin, account);
+current.searchParams.set('cuenta', account);
+const returnTo = current.pathname + current.search;
+function withParam(key, value) {
+  const next = new URL(current);
+  next.searchParams.set(key, String(value));
+  return next.pathname + next.search;
+}
+const exportUrl = '/api/movimientos/exportar' + current.search;
+const hasFilters = Object.values(filters).some(Boolean);
+const pageNumbers = Array.from({ length: Math.min(3, pages) }, (_, index) => Math.min(Math.max(1, page - 1), Math.max(1, pages - 2)) + index);
+const editId = params.get('editar');
+const movement = !hidden && editId ? await movementById(user.id, editId) : null;
+const undoId = params.get('deshacer') || '';
+const undoMs = params.get('aviso') === 'eliminado' ? await undoRemaining(user.id, undoId) : 0;
+const subtitle = `${total} ${total === 1 ? 'movimiento' : 'movimientos'} · Cuenta ${ACCOUNTS[account].toLowerCase()}`;
+---
+<FinanceLayout title="Movimientos" {subtitle} {user} {account} {hidden} page="/movimientos" {returnTo}>
+  <FinanceNotice code={params.get('aviso')} {undoId} {undoMs} {returnTo} />
+  {editId && !movement && <p class="finance-error" role="alert">{hidden ? 'Muestra los montos para editar el movimiento.' : 'Ese movimiento ya no está disponible.'}</p>}
+  <div class="history-toolbar">
+    <form action="/movimientos" method="get" class="history-filters" aria-label="Filtros de movimientos" data-history-filter-form>
+      <input type="hidden" name="cuenta" value={account} />
+      <label class="history-search">
+        <span aria-hidden="true">⌕</span>
+        <span class="visually-hidden">Buscar movimientos</span>
+        <input name="q" type="search" placeholder="Buscar por concepto, categoría o nota…" value={filters.q} maxlength="100" autocomplete="off" data-live-search />
+      </label>
+      <details class="filter-popover">
+        <summary>Fecha{filters.from || filters.to ? ' · activa' : ''}</summary>
+        <div>
+          <label class="finance-field">Desde<input name="desde" type="date" value={filters.from} /></label>
+          <label class="finance-field">Hasta<input name="hasta" type="date" value={filters.to} /></label>
+          <div class="popover-actions">
+            <button type="submit" class="primary-button popover-filter-btn">Filtrar</button>
+          </div>
+        </div>
+      </details>
+      <details class="filter-popover">
+        <summary>Categoría{filters.category || filters.kind ? ' · activa' : ''}</summary>
+        <div>
+          <label class="finance-field">Categoría<select name="categoria"><option value="">Todas</option>{ALL_CATEGORIES.map((item) => <option value={item} selected={item === filters.category}>{item}</option>)}</select></label>
+          <label class="finance-field">Tipo<select name="tipo"><option value="">Todos</option>{Object.entries(KINDS).map(([key, label]) => <option value={key} selected={key === filters.kind}>{label}</option>)}</select></label>
+          <div class="popover-actions">
+            <button type="submit" class="primary-button popover-filter-btn">Filtrar</button>
+          </div>
+        </div>
+      </details>
+      {!hidden && <details class="filter-popover">
+        <summary>Monto{filters.min || filters.max ? ' · activo' : ''}</summary>
+        <div>
+          <label class="finance-field">Monto mínimo<input name="min" inputmode="decimal" maxlength="10" value={filters.min} placeholder="0.00" /></label>
+          <label class="finance-field">Monto máximo<input name="max" inputmode="decimal" maxlength="10" value={filters.max} placeholder="Sin límite" /></label>
+          <div class="popover-actions">
+            <button type="submit" class="primary-button popover-filter-btn">Filtrar</button>
+          </div>
+        </div>
+      </details>}
+      <button type="submit" class="finance-pill filter-submit-btn">Filtrar</button>
+    </form>
+    <div class="history-actions">
+      {!hidden && !error && <a class="finance-pill" href={exportUrl}>Exportar CSV</a>}
+      <button class="primary-button" type="button" data-open-dialog="movement-dialog">+ Nuevo</button>
+    </div>
+  </div>
+  {hasFilters && <div class="active-filters"><span>{error ? 'Filtros por corregir' : 'Filtros aplicados'}</span><a class="finance-link" href={clearPath}>Limpiar filtros</a></div>}
+  {error && <p class="finance-error" role="alert">{error}</p>}
+  <section class="finance-card history-card" aria-label="Historial de movimientos">
+    {rows.length ? <div class="table-scroll" tabindex="0" aria-label="Tabla desplazable">
+      <table class="history-table">
+        <thead><tr><th scope="col">Fecha</th><th scope="col">Concepto</th><th scope="col">Categoría</th><th scope="col">Método</th><th scope="col">Estado</th><th scope="col">Monto</th><th scope="col">Acciones</th></tr></thead>
+        <tbody data-history-tbody>{rows.map((row) => <tr data-history-row data-search-text={`${row.concept} ${row.category} ${row.note || ''} ${dateLabel(row.date)} ${(row.amount / 100).toFixed(2)}`}>
+          <td>{dateLabel(row.date)}</td>
+          <td><div class="table-concept"><span class="movement-initial" aria-hidden="true">{row.concept[0].toUpperCase()}</span><div><strong>{row.concept}</strong>{row.note && <small>{row.note}</small>}</div></div></td>
+          <td><span class="table-chip">{row.category}</span></td>
+          <td><span class="table-chip">Manual</span></td>
+          <td><span class="table-chip confirmed">Confirmado</span></td>
+          <td><strong class:list={['amount-text', { positive: row.kind === 'ingreso' }]}>{row.kind === 'ingreso' ? '+' : '−'} {soles(row.amount, hidden)}</strong></td>
+          <td><div class="row-actions">
+            {!hidden && <a class="edit-action" href={withParam('editar', row.id)} data-edit-movement={JSON.stringify({ id: row.id, kind: row.kind, account: row.account, amount: (row.amount / 100).toFixed(2), concept: row.concept, category: row.category, date: row.date, note: row.note, dateLabel: dateLabel(row.date) })} aria-label={'Editar ' + row.concept}>Editar</a>}
+            <DeleteButton movementId={row.id} movementName={row.concept} label="Eliminar" variant="row" />
+          </div></td>
+        </tr>)}</tbody>
+      </table>
+      <div class="finance-empty" data-live-search-empty hidden>
+        <span class="empty-icon" aria-hidden="true">⌕</span>
+        <h2>No encontramos coincidencias en esta página</h2>
+        <p>Presiona <strong>Filtrar</strong> o <strong>Enter</strong> para buscar en todo tu historial.</p>
+      </div>
+    </div> : <div class="finance-empty"><span class="empty-icon" aria-hidden="true">⌕</span>
+      <h2>{hasFilters ? 'No encontramos coincidencias' : 'Aún no hay movimientos'}</h2>
+      <p>{hasFilters ? 'Ajusta los filtros para encontrar lo que buscas.' : 'Registra un ingreso o gasto para empezar tu historial.'}</p>
+      {hasFilters ? <a class="finance-link" href={clearPath}>Ver todos los movimientos</a> : <button type="button" class="finance-link" data-open-dialog="movement-dialog">Registrar un movimiento</button>}
+    </div>}
+    {total > 0 && <footer class="history-footer">
+      <p data-history-count data-default-count={`Mostrando ${offset + 1}–${offset + rows.length} de ${total} ${total === 1 ? 'movimiento' : 'movimientos'}`}>Mostrando {offset + 1}–{offset + rows.length} de {total} {total === 1 ? 'movimiento' : 'movimientos'}</p>
+      {pages > 1 && <nav class="pagination" aria-label="Paginación">
+        {page > 1 && <a href={withParam('pagina', page - 1)} aria-label="Página anterior">‹</a>}
+        {pageNumbers.map((number) => <a href={withParam('pagina', number)} aria-current={number === page ? 'page' : undefined} aria-label={'Página ' + number}>{number}</a>)}
+        {page < pages && <a href={withParam('pagina', page + 1)} aria-label="Página siguiente">›</a>}
+      </nav>}
+    </footer>}
+  </section>
+  <MovementDialog userId={user.id} {account} {returnTo} {movement} />
+  <dialog class="finance-dialog" id="delete-dialog" aria-labelledby="delete-title">
+    <header class="dialog-heading"><div><h2 id="delete-title">Eliminar movimiento</h2><p>¿Quieres eliminar <strong data-delete-name></strong>? Tendrás 10 segundos para deshacerlo.</p></div><button class="dialog-x" type="button" aria-label="Cerrar" data-close-dialog>×</button></header>
+    <form action="/api/movimientos" method="post" data-mutation>
+      <input type="hidden" name="action" value="eliminar" /><input type="hidden" name="id" value="" /><input type="hidden" name="returnTo" value={returnTo} />
+      <p class="finance-error" data-form-error role="alert" hidden></p>
+      <footer class="dialog-actions">
+        <button class="finance-pill" type="button" data-close-dialog autofocus>Cancelar</button>
+        <DeleteButton label="Eliminar movimiento" variant="confirm" type="submit" />
+      </footer>
+    </form>
+  </dialog>
+</FinanceLayout>
