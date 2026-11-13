@@ -1,0 +1,165 @@
+---
+/**
+ * src/components/FirmasMultimodales.astro
+ * Panel interactivo de Firmas Multimodales (Actividad Práctica 14):
+ * Permite probar y auditar en vivo las 4 firmas (Éxito, Error, Cancelación, Progreso)
+ * combinando Canal Visual + Canal Auditivo (Web Audio API) + Canal Háptico (Vibration API).
+ */
+import { MULTIMODAL_SIGNATURES } from '../lib/feedback/audioFeedback.js';
+const signatures = Object.values(MULTIMODAL_SIGNATURES);
+---
+
+<section class="finance-card multimodal-card" aria-labelledby="multimodal-title">
+  <details class="multimodal-details">
+    <summary class="multimodal-summary">
+      <div>
+        <strong id="multimodal-title">🎛️ Laboratorio de Firmas Multimodales (Actividad 14 · WCAG AAA)</strong>
+        <span>Prueba en vivo la redundancia sensorial (Visual + Earcon Web Audio + Vibración Háptica)</span>
+      </div>
+      <span class="finance-pill multimodal-badge">4 firmas activas</span>
+    </summary>
+
+    <div class="multimodal-content">
+      <div class="multimodal-grid">
+        {signatures.map((sig) => (
+          <button
+            type="button"
+            class:list={['multimodal-btn', `multimodal-${sig.id}`]}
+            data-test-signature={sig.id}
+            aria-label={`Probar firma multimodal de ${sig.label}`}
+          >
+            <div class="multimodal-btn-top">
+              <strong>{sig.label}</strong>
+              <span class="multimodal-pill">{sig.durationMs} ms</span>
+            </div>
+            <p>{sig.description}</p>
+            <small>
+              🔊 {sig.freqStart}→{sig.freqEnd} Hz ({sig.wave}) · 📳 [{sig.vibratePattern.join(', ')}] ms
+            </small>
+          </button>
+        ))}
+      </div>
+      <p class="multimodal-live" role="status" aria-live="polite" data-multimodal-status>
+        Selecciona cualquiera de las 4 firmas para disparar su respuesta visual, auditiva y háptica en sincronía.
+      </p>
+    </div>
+  </details>
+</section>
+
+<script>
+  import { triggerSignature } from '../lib/feedback/audioFeedback.js';
+
+  for (const btn of document.querySelectorAll('[data-test-signature]')) {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.testSignature;
+      btn.setAttribute('data-active-pulse', 'true');
+      window.setTimeout(() => btn.removeAttribute('data-active-pulse'), 260);
+
+      const sig = triggerSignature(type, { forceAudio: true, enableAudio: true, enableHaptic: true });
+      const status = document.querySelector('[data-multimodal-status]');
+      if (status) {
+        status.textContent = `Firma ejecutada: ${sig.label} — Audio ${sig.freqStart}→${sig.freqEnd} Hz (${sig.durationMs} ms) + Vibración [${sig.vibratePattern.join(', ')}] ms.`;
+      }
+    });
+  }
+</script>
+
+<style>
+  .multimodal-card {
+    margin-top: 20px;
+    padding: 16px 22px;
+  }
+  .multimodal-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .multimodal-summary::-webkit-details-marker {
+    display: none;
+  }
+  .multimodal-summary strong {
+    display: block;
+    font-size: 16px;
+    color: var(--finance-ink);
+  }
+  .multimodal-summary span {
+    font-size: 13px;
+    color: var(--finance-muted);
+  }
+  .multimodal-badge {
+    min-height: 34px;
+    padding: 4px 12px;
+    font-size: 12px;
+    background: var(--finance-mint);
+    color: var(--account-accent);
+    border-color: transparent;
+  }
+  .multimodal-content {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--finance-border);
+  }
+  .multimodal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .multimodal-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1.5px solid var(--finance-border);
+    background: var(--finance-surface);
+    color: var(--finance-ink);
+    text-align: left;
+    transition: transform 120ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .multimodal-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+  }
+  .multimodal-btn[data-active-pulse="true"] {
+    transform: scale(0.96);
+  }
+  .multimodal-exito { border-left: 5px solid #10b981; }
+  .multimodal-error { border-left: 5px solid #dc2626; }
+  .multimodal-cancelacion { border-left: 5px solid #f59e0b; }
+  .multimodal-progreso { border-left: 5px solid #3b82f6; }
+  .multimodal-btn-top {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .multimodal-pill {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--finance-mint);
+    color: var(--account-accent);
+  }
+  .multimodal-btn p {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--finance-muted);
+  }
+  .multimodal-btn small {
+    font-size: 11.5px;
+    font-weight: 750;
+    color: var(--account-link);
+  }
+  .multimodal-live {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--account-accent);
+  }
+</style>

@@ -2,6 +2,7 @@
 import FinanceLayout from '../layouts/FinanceLayout.astro';
 import FinanceNotice from '../components/FinanceNotice.astro';
 import MovementDialog from '../components/MovementDialog.astro';
+import FirmasMultimodales from '../components/FirmasMultimodales.astro';
 import { currentUser } from '../server/auth.js';
 import { privacyMode } from '../server/finance-http.js';
 import { dashboardData } from '../server/movements.js';
@@ -55,7 +56,7 @@ const quickTemplates = isPro
       <small>{data.todaySpent > data.limit ? 'Superaste el tope de hoy' : 'Dentro de tu límite diario'}</small>
     </article>
     <article class="finance-card registro-stat">
-      <span>{isPro ? 'Caja neta del mes' : 'Saldo acumulado del mes'}</span>
+      <span>{isPro ? 'Resultado del negocio este mes' : 'Saldo acumulado del mes'}</span>
       <strong>{soles(data.balance, hidden)}</strong>
       <small>Ingresos: {soles(data.income, hidden)} · Gastos: {soles(data.expenses, hidden)}</small>
     </article>
@@ -63,7 +64,7 @@ const quickTemplates = isPro
 
   <section class="finance-card registro-templates" aria-label="Plantillas rápidas">
     <div class="registro-templates-head">
-      <strong>⚡ Plantillas rápidas ({ACCOUNTS[account]})</strong>
+      <strong>⚡ Plantillas rápidas ({ACCOUNTS[account]}) · Ley de Hick</strong>
       <span>Toca una opción para autocompletar concepto y categoría en el formulario:</span>
     </div>
     <div class="registro-chips">
@@ -109,4 +110,6 @@ const quickTemplates = isPro
       )}
     </aside>
   </div>
+
+  <FirmasMultimodales />
 </FinanceLayout>

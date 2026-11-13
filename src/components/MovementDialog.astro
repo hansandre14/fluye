@@ -9,13 +9,18 @@ const kind = movement?.kind ?? 'gasto';
 const selectedAccount = movement?.account ?? account;
 const defaults = Object.fromEntries(await Promise.all(Object.keys(ACCOUNTS).map(async (key) => [key, await movementDefaults(userId, key)])));
 const suggested = defaults[selectedAccount].categories[kind];
+const activeCategory = movement?.category ?? suggested ?? CATEGORIES[kind][0];
+const quickCategories = [
+  ...(suggested ? [suggested] : []),
+  ...CATEGORIES[kind].filter((cat) => cat !== suggested),
+].slice(0, 4);
 ---
 <Container class={standalone ? 'finance-card movement-standalone' : 'finance-dialog movement-dialog'} id="movement-dialog" aria-labelledby="movement-title" data-auto-open={movement ? 'true' : undefined} data-return={movement ? returnTo : undefined}>
   <header class="dialog-heading">
     <div><h2 id="movement-title">{movement ? 'Editar movimiento' : 'Anotar un movimiento'}</h2><p>Menos pasos, siempre con el control de tus datos.</p></div>
     {!standalone && <button class="dialog-x" type="button" aria-label="Cerrar formulario" data-close-dialog>×</button>}
   </header>
-  <form method="post" action="/api/movimientos" data-mutation data-movement-form data-defaults={JSON.stringify(defaults)} data-account={account} data-today={date} data-today-label={dateLabel(date)}>
+  <form method="post" action="/api/movimientos" data-mutation data-movement-form data-defaults={JSON.stringify(defaults)} data-categories={JSON.stringify(CATEGORIES)} data-account={account} data-today={date} data-today-label={dateLabel(date)}>
     <input type="hidden" name="action" value={movement ? 'editar' : 'crear'} />
     <input type="hidden" name="id" value={movement?.id ?? randomUUID()} />
     <input type="hidden" name="returnTo" value={returnTo} />
@@ -31,6 +36,23 @@ const suggested = defaults[selectedAccount].categories[kind];
         </label>
         <label class="finance-field"><span>Concepto</span><input name="concept" list="concept-history" maxlength="80" placeholder="¿En qué gastaste?" value={movement?.concept ?? ''} required /><small>Escríbelo o elige un concepto de tu historial.</small></label>
         <datalist id="concept-history">{defaults[selectedAccount].concepts.map((concept) => <option value={concept} />)}</datalist>
+
+        <div class="hick-suggestions" aria-label="Categorías sugeridas (Ley de Hick: máximo 4 opciones rápidas)">
+          <span class="hick-label">Sugerencias rápidas de categoría (4 más usadas):</span>
+          <div class="hick-chips" data-hick-chips>
+            {quickCategories.map((cat) => (
+              <button
+                type="button"
+                class:list={['hick-chip', { 'is-active': cat === activeCategory }]}
+                data-hick-category={cat}
+                aria-pressed={String(cat === activeCategory)}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div class="field-pair">
           <label class="finance-field"><span>Categoría</span><select name="category" required>
             <option value="">Elige una categoría</option>
@@ -44,8 +66,8 @@ const suggested = defaults[selectedAccount].categories[kind];
         <label class="finance-field"><span>Nota <small>· opcional</small></span><textarea name="note" rows="2" maxlength="400" placeholder="Agrega algún detalle">{movement?.note ?? ''}</textarea></label>
       </div>
       <aside class="movement-tips">
-        <strong>✧ Un buen punto de partida</strong>
-        <p>Te mostramos de dónde viene cada dato para que no tengas que recordarlo.</p>
+        <strong>✧ Un buen punto de partida (Act. 8 y 9)</strong>
+        <p>Aplicamos la Ley de Hick (4 categorías rápidas) y valores inteligentes por defecto para evitar errores.</p>
         <dl><dt data-tip-date-label>{movement ? 'Fecha registrada' : 'Hoy'}</dt><dd data-tip-date>{dateLabel(movement?.date ?? date)}</dd>
           <dt data-tip-account>{ACCOUNTS[selectedAccount]}</dt><dd>Cuenta que seleccionaste para este movimiento.</dd>
           <dt data-tip-category>{movement?.category ?? suggested ?? 'Categoría'}</dt><dd>Si tienes historial, sugerimos la categoría del último movimiento de este tipo.</dd>

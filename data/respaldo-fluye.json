@@ -1,19 +1,26 @@
 {
-  "updatedAt": "2026-11-10T02:18:00.000Z",
+  "updatedAt": "2026-11-13T18:10:00.639Z",
   "users": [
+    {
+      "id": "b13c48a4-0115-4851-b21a-f1a7a033561c",
+      "name": "Hans Andre Perez",
+      "email": "hperezsequeiros@gmail.com",
+      "password_hash": "scrypt$c1d1ea8ef5f037a20c1c42c7d17483f7$a8f1c22cacb905fb660c25be131d7d99c1675d0123eb55b88767891214fc090ee52fa203566c05fcc567b0e859a1ee167380fcd29fadf1d1d071fb659c688c4b",
+      "created_at": 1794190997707
+    },
     {
       "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
       "name": "Hans Andre",
       "email": "222184@unamba.edu.pe",
-      "password_hash": "PENDIENTE_HASH",
+      "password_hash": "scrypt$44f938856df7b9e11ab6b42d3fefe0db$a2520d0b78fd37fffe4c67289be0b44a85bec8723b74c1e6a6fe914b82c82ae56b7d9648403d027b34e26b0991f9ad93784a8cb1ac918d71aecf8617f5329cf4",
       "created_at": 1794193000000
     },
     {
-      "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
-      "name": "Hans Andre",
-      "email": "hperezsequeiros@gmail.com",
-      "password_hash": "PENDIENTE_HASH",
-      "created_at": 1794193000500
+      "id": "e8e3991b-13f6-48ce-83db-56090d7c25ca",
+      "name": "Andre Sequeiros",
+      "email": "hanss.12@gmail.com",
+      "password_hash": "scrypt$6648df8cc18e118342a0e107a2e3f4de$46356a865a5c4e43fff30b85f8f74d5333367c6a0d1aad4f9435e0952a0b1929e7147f8fc595eee6af3340d388ec09ac69ef1d2320726e4b51cba93ecf88f456",
+      "created_at": 1794193318012
     }
   ],
   "movements": [
@@ -54,6 +61,32 @@
       "date": "2026-11-08",
       "note": "pago mensual de netflix",
       "created_at": 1794193003000,
+      "deleted_at": null
+    },
+    {
+      "id": "3418af1a-d7d4-426a-8fa7-6e08cd559f54",
+      "user_id": "b13c48a4-0115-4851-b21a-f1a7a033561c",
+      "account": "personal",
+      "kind": "gasto",
+      "amount": 5600,
+      "concept": "ALMUERZO",
+      "category": "Alimentación",
+      "date": "2026-11-09",
+      "note": "",
+      "created_at": 1794275698376,
+      "deleted_at": null
+    },
+    {
+      "id": "44f7a502-618e-43d2-985f-772e66e349c5",
+      "user_id": "b13c48a4-0115-4851-b21a-f1a7a033561c",
+      "account": "personal",
+      "kind": "gasto",
+      "amount": 4500,
+      "concept": "cena",
+      "category": "Alimentación",
+      "date": "2026-11-13",
+      "note": "comi pollo",
+      "created_at": 1794593244754,
       "deleted_at": null
     }
   ],

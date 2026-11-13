@@ -1,10 +1,12 @@
 import { ACCOUNTS, cents } from '../lib/finance.js';
+import { triggerSignature } from '../lib/feedback/audioFeedback.js';
 
 const entry = document.querySelector('[data-movement-form]');
 let checkEntry;
 let setMovementMode;
 if (entry instanceof HTMLFormElement) {
   const defaults = JSON.parse(entry.dataset.defaults);
+  const categoriesByKind = entry.dataset.categories ? JSON.parse(entry.dataset.categories) : null;
   const action = entry.elements.namedItem('action');
   const id = entry.elements.namedItem('id');
   const amount = entry.elements.namedItem('amount');
@@ -18,7 +20,33 @@ if (entry instanceof HTMLFormElement) {
   const title = document.getElementById('movement-title');
   const tipDateLabel = entry.querySelector('[data-tip-date-label]');
   const tipDate = entry.querySelector('[data-tip-date]');
+  const hickContainer = entry.querySelector('[data-hick-chips]');
   let saveLabel = submit.textContent;
+
+  function renderHickChips(currentKind, suggestedCat, selectedCat) {
+    if (!hickContainer || !categoriesByKind) return;
+    const pool = categoriesByKind[currentKind] || [];
+    const topFour = [
+      ...(suggestedCat && pool.includes(suggestedCat) ? [suggestedCat] : []),
+      ...pool.filter((item) => item !== suggestedCat),
+    ].slice(0, 4);
+
+    hickContainer.replaceChildren(...topFour.map((cat) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hick-chip' + (cat === selectedCat ? ' is-active' : '');
+      btn.dataset.hickCategory = cat;
+      btn.setAttribute('aria-pressed', String(cat === selectedCat));
+      btn.textContent = cat;
+      btn.addEventListener('click', () => {
+        category.value = cat;
+        entry.querySelector('[data-tip-category]').textContent = cat;
+        renderHickChips(currentKind, suggestedCat, cat);
+        checkEntry();
+      });
+      return btn;
+    }));
+  }
 
   checkEntry = () => {
     const amountOkay = (cents(amount.value) ?? 0) > 0;
@@ -47,6 +75,7 @@ if (entry instanceof HTMLFormElement) {
       option.value = item;
       return option;
     }));
+    renderHickChips(kind.value, suggested, category.value);
     checkEntry();
   }
   setMovementMode = (movement = null) => {
@@ -66,6 +95,7 @@ if (entry instanceof HTMLFormElement) {
     if (movement) {
       category.value = movement.category;
       entry.querySelector('[data-tip-category]').textContent = movement.category;
+      renderHickChips(movement.kind, defaults[movement.account]?.categories?.[movement.kind], movement.category);
       checkEntry();
     }
   };
@@ -85,7 +115,9 @@ if (entry instanceof HTMLFormElement) {
       if (chip.dataset.tplCategory) {
         category.value = chip.dataset.tplCategory;
         entry.querySelector('[data-tip-category]').textContent = category.value;
+        renderHickChips(tplKind, defaults[account.value]?.categories?.[tplKind], category.value);
       }
+      triggerSignature('progreso');
       checkEntry();
       amount.focus();
     });
@@ -139,6 +171,7 @@ for (const form of document.querySelectorAll('[data-mutation]')) {
     event.preventDefault();
     if (form.getAttribute('aria-busy') === 'true') return;
     const body = new FormData(form);
+    const actionType = body.get('action');
     const error = form.querySelector('[data-form-error]');
     const buttons = [...form.querySelectorAll('button')];
     error.hidden = true;
@@ -147,6 +180,9 @@ for (const form of document.querySelectorAll('[data-mutation]')) {
     const submit = form.querySelector('[type="submit"]');
     const label = submit.textContent;
     submit.textContent = 'Procesando…';
+    if (actionType !== 'eliminar') {
+      triggerSignature('progreso');
+    }
     try {
       const response = await fetch(form.getAttribute('action'), {
         method: 'POST',
@@ -156,12 +192,17 @@ for (const form of document.querySelectorAll('[data-mutation]')) {
       });
       const result = await response.json();
       if (response.ok) {
+        if (actionType !== 'eliminar') {
+          triggerSignature('exito');
+        }
         window.location.assign(result.next);
         return;
       }
+      triggerSignature('error');
       error.textContent = result.message || 'No pudimos completar la acción.';
       error.hidden = false;
     } catch {
+      triggerSignature('error');
       error.textContent = 'No pudimos completar la acción. Comprueba la conexión e inténtalo otra vez.';
       error.hidden = false;
     } finally {

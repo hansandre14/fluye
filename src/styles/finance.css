@@ -576,6 +576,70 @@ html[data-theme="dark"] .dialog-actions .primary-button:disabled {
   color: #94a3b8;
 }
 
+/* Actividad 8: Mitigación de carga cognitiva (Ley de Hick — 4 sugerencias rápidas) */
+.hick-suggestions {
+  display: grid;
+  gap: 8px;
+  padding: 11px 13px;
+  border-radius: 16px;
+  background: var(--finance-mint);
+  border: 1px dashed var(--finance-border);
+}
+.hick-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--account-accent);
+}
+.hick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.hick-chip {
+  min-height: 34px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--finance-border);
+  background: var(--finance-card);
+  color: var(--finance-ink);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.hick-chip:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.hick-chip.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+}
+html[data-theme="dark"] .hick-suggestions {
+  background: #183a36;
+  border-color: #64748b;
+}
+html[data-theme="dark"] .hick-label {
+  color: #5eead4;
+}
+html[data-theme="dark"] .hick-chip {
+  background: #1f2937;
+  color: #f3f4f6;
+  border-color: #64748b;
+}
+html[data-theme="dark"] .hick-chip:hover {
+  border-color: #5eead4;
+  color: #ffffff;
+}
+html[data-theme="dark"] .hick-chip.is-active {
+  background: #5eead4;
+  border-color: #5eead4;
+  color: #092c27;
+}
+
 @media (max-width: 1100px) {
   .finance-shell { padding-inline: 28px; }
   .dashboard-grid, .dashboard-column { gap: 18px; }

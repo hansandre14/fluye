@@ -18,16 +18,21 @@ const remaining = Math.round(100 * data.available / data.limit);
 const over = data.todaySpent > data.limit;
 const firstName = user.name.trim().split(/\s+/)[0];
 const returnTo = '/dashboard?cuenta=' + account;
+const netMonthResult = data.income - data.expenses;
 const metrics = [
-  { label: isPro ? 'Caja neta' : 'Saldo total', amount: data.balance, hint: isPro ? 'Facturación menos egresos' : 'Ingresos menos gastos acumulados' },
+  {
+    label: isPro ? 'Resultado del negocio este mes' : 'Saldo total',
+    amount: isPro ? netMonthResult : data.balance,
+    hint: isPro ? 'Ingresos menos gastos operativos del mes' : 'Ingresos menos gastos acumulados',
+  },
   { label: isPro ? 'Ingresos / Ventas' : 'Ingresos', amount: data.income, hint: 'Este mes' },
   { label: isPro ? 'Gastos operativos' : 'Gastos', amount: data.expenses, hint: 'Este mes' },
 ];
 const subtitle = isPro
-  ? ` Flujo de caja y tope operativo · ${dateLabel(data.date, true)}`
+  ? `Resultado del negocio y tope operativo · ${dateLabel(data.date, true)}`
   : `Así va tu alcancía personal hoy · ${dateLabel(data.date, true)}`;
 ---
-<FinanceLayout title={`¡Hola, ${firstName}!`} subtitle={subtitle.trim()} {user} {account} {hidden} page="/dashboard" {returnTo}>
+<FinanceLayout title={`¡Hola, ${firstName}!`} subtitle={subtitle} {user} {account} {hidden} page="/dashboard" {returnTo}>
   <FinanceNotice code={Astro.url.searchParams.get('aviso')} {returnTo} />
   <div class="dashboard-grid">
     <div class="dashboard-column">

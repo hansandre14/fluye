@@ -3,6 +3,7 @@ import FinanceLayout from '../layouts/FinanceLayout.astro';
 import FinanceNotice from '../components/FinanceNotice.astro';
 import MovementDialog from '../components/MovementDialog.astro';
 import DeleteButton from '../components/DeleteButton.astro';
+import FirmasMultimodales from '../components/FirmasMultimodales.astro';
 import { currentUser } from '../server/auth.js';
 import { financeReturn, privacyMode } from '../server/finance-http.js';
 import { listMovements, movementById, readFilters, undoRemaining } from '../server/movements.js';
@@ -120,6 +121,7 @@ const subtitle = `${total} ${total === 1 ? 'movimiento' : 'movimientos'} · Cuen
       </nav>}
     </footer>}
   </section>
+  <FirmasMultimodales />
   <MovementDialog userId={user.id} {account} {returnTo} {movement} />
   <dialog class="finance-dialog" id="delete-dialog" aria-labelledby="delete-title">
     <header class="dialog-heading"><div><h2 id="delete-title">Eliminar movimiento</h2><p>¿Quieres eliminar <strong data-delete-name></strong>? Tendrás 10 segundos para deshacerlo.</p></div><button class="dialog-x" type="button" aria-label="Cerrar" data-close-dialog>×</button></header>
