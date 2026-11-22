@@ -1,0 +1,8 @@
+---
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+---
+<div class="brand" aria-label={t('auth.brandLabel')} data-i18n-aria-label="auth.brandLabel">
+  <span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+  <span><strong>Fluye</strong><small data-i18n="auth.brandDescription">{t('auth.brandDescription')}</small></span>
+</div>

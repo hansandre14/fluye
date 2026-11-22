@@ -1,0 +1,25 @@
+---
+import FinanceLayout from '../layouts/FinanceLayout.astro';
+import FirmasMultimodales from '../components/FirmasMultimodales.astro';
+import { currentUser } from '../server/auth.js';
+import { privacyMode } from '../server/finance-http.js';
+import { accountFrom } from '../lib/finance.js';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+const account = accountFrom(Astro.url.searchParams.get('cuenta'));
+const hidden = privacyMode(Astro.cookies);
+const returnTo = '/auditoria?cuenta=' + account;
+---
+<FinanceLayout
+  title="Panel de Verificación IHC"
+  subtitle="Pruebas de Firmas Multimodales, Escala SAM y Recuperación Guiada"
+  {user}
+  {account}
+  {hidden}
+  page="/auditoria"
+  {returnTo}
+>
+  <FirmasMultimodales />
+</FinanceLayout>

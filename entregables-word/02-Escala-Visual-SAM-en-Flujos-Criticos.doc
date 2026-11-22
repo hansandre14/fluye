@@ -1,0 +1,203 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Escala Visual SAM en Flujos Críticos - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.2cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 11pt; }
+  h1 { color: #075e58; font-size: 17pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13.5pt; margin-top: 18px; margin-bottom: 8px; }
+  h3 { color: #1e40af; font-size: 11.5pt; margin-top: 14px; margin-bottom: 6px; }
+  .meta { background: #e5f1ed; padding: 12px 16px; border-left: 5px solid #0f766e; margin-bottom: 18px; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 8px 10px; border: 1px solid #075e58; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .sam-pict { font-size: 14pt; text-align: center; letter-spacing: 3px; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+  .badge-warn { background: #fef3c7; color: #92400e; font-weight: bold; padding: 2px 6px; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Diseño y Aplicación de la Escala Visual SAM (Self-Assessment Manikin) en Flujos Críticos</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 + MySQL 8)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)<br>
+  <strong>Instrumento en Vivo en el Software:</strong> Integrado interactivamente en <code>src/components/FirmasMultimodales.astro</code> (rutas <code>/registro</code> y <code>/movimientos</code>).
+</div>
+
+<h2>1. Selección de los 2 Flujos Críticos Medidos</h2>
+
+<ol>
+  <li><strong>Flujo Crítico A — Registro Manual Asistido con Mitigación Cognitiva (Ley de Hick):</strong> El usuario ingresa a <em>Centro de Registro</em> (<code>/registro</code>) o abre el modal <code>+ Nuevo</code>, utiliza una plantilla rápida o selecciona entre las 4 categorías sugeridas por la Ley de Hick, ingresa un monto y guarda el movimiento en MySQL.</li>
+  <li><strong>Flujo Crítico B — Búsqueda/Filtrado por Rango y Eliminación Segura con Reversibilidad (Deshacer en 10 s):</strong> El usuario filtra un gasto específico en <em>Movimientos</em> (<code>/movimientos</code>), solicita su eliminación en el modal de confirmación multimodal (<code>&lt;fluye-delete-button&gt;</code>) y recupera el registro pulsando <strong>«Deshacer»</strong> dentro de la ventana de 10 segundos.</li>
+</ol>
+
+<h2>2. Configuración del Instrumento Pictórico SAM (Escala 1 a 9)</h2>
+
+<p>Se configuró la escala pictórica estándar de Bradley y Lang (1994) en 9 puntos para las tres dimensiones afectivas, incorporando además su versión interactiva directamente dentro de la interfaz de Astro:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dimensión SAM</th>
+      <th>Extremo Bajo (1 – 3)</th>
+      <th>Punto Medio (4 – 6)</th>
+      <th>Extremo Alto / Meta (7 – 9)</th>
+      <th>Criterio Óptimo en Fluye</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Valencia</strong><br>(Agrado / Desagrado)</td>
+      <td class="sam-pict">😣 😟 🙁<br><small>1 · 2 · 3 (Frustración / Desagrado)</small></td>
+      <td class="sam-pict">😐 🙂 🙂<br><small>4 · 5 · 6 (Neutral)</small></td>
+      <td class="sam-pict">😊 😄 🤩<br><small>7 · 8 · 9 (Satisfacción / Agrado)</small></td>
+      <td><strong>Meta &ge; 7.5 / 9</strong><br>(Alta satisfacción al completar el registro)</td>
+    </tr>
+    <tr>
+      <td><strong>2. Activación (Arousal)</strong><br>(Calma vs. Tensión)</td>
+      <td class="sam-pict">😌 🧘 🙂<br><small>1 · 2 · 3 (Calma / Sin estrés)</small></td>
+      <td class="sam-pict">😮 🧐 😬<br><small>4 · 5 · 6 (Alerta moderada)</small></td>
+      <td class="sam-pict">😰 😱 🤯<br><small>7 · 8 · 9 (Alta tensión / Estrés)</small></td>
+      <td><strong>Meta &le; 3.5 / 9</strong><br>(Baja tensión nerviosa incluso al borrar)</td>
+    </tr>
+    <tr>
+      <td><strong>3. Dominio / Control</strong><br>(Sin control vs. En control)</td>
+      <td class="sam-pict">🫣 😥 😕<br><small>1 · 2 · 3 (Superado por la interfaz)</small></td>
+      <td class="sam-pict">😐 🧑‍💻 👍<br><small>4 · 5 · 6 (Control parcial)</small></td>
+      <td class="sam-pict">😎 🛡️ 👑<br><small>7 · 8 · 9 (Dominio y control total)</small></td>
+      <td><strong>Meta &ge; 8.0 / 9</strong><br>(Sensación de reversibilidad y dominio)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Aplicación y Tabulación con Usuarios de Prueba (3 Evaluaciones por Flujo)</h2>
+
+<h3>3.1 Resultados en Flujo Crítico A: Registro Manual Asistido (Ley de Hick + Plantillas)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Usuario Evaluado</th>
+      <th>Perfil</th>
+      <th>Valencia (1–9)<br><small>(Más alto = Mejor)</small></th>
+      <th>Activación / Tensión (1–9)<br><small>(Más bajo = Más calmo)</small></th>
+      <th>Dominio / Control (1–9)<br><small>(Más alto = Más control)</small></th>
+      <th>Observación Inmediata del Usuario Post-Flujo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Usuario 1 (U1)</strong><br>Estudiante Ing. (21 años)</td>
+      <td>Uso móvil y laptop</td>
+      <td><strong>9 / 9</strong> 😄</td>
+      <td><strong>2 / 9</strong> 😌</td>
+      <td><strong>9 / 9</strong> 👑</td>
+      <td><em>"Las 4 píldoras rápidas encima de Categoría y las plantillas hicieron que solo tuviera que escribir el monto. Súper rápido."</em></td>
+    </tr>
+    <tr>
+      <td><strong>Usuario 2 (U2)</strong><br>Compañero otro grupo (22 años)</td>
+      <td>Emprendedor / Freelance</td>
+      <td><strong>8 / 9</strong> 😊</td>
+      <td><strong>3 / 9</strong> 🙂</td>
+      <td><strong>8 / 9</strong> 😎</td>
+      <td><em>"En Modo Profesional antes no veía mis categorías de Honorarios primero; con las sugerencias rápidas ahora aparece de inmediato."</em></td>
+    </tr>
+    <tr>
+      <td><strong>Usuario 3 (U3)</strong><br>Usuaria externa (24 años)</td>
+      <td>Gestión de gastos diarios</td>
+      <td><strong>8 / 9</strong> 😊</td>
+      <td><strong>2 / 9</strong> 😌</td>
+      <td><strong>9 / 9</strong> 👑</td>
+      <td><em>"El sonido de éxito cuando se guarda me dio seguridad de que sí entró a la base de datos."</em></td>
+    </tr>
+    <tr>
+      <td><strong>PROMEDIO FLUJO A</strong></td>
+      <td><strong>N = 3 usuarios</strong></td>
+      <td><strong>8.33 / 9.0</strong> <span class="badge-ok">Óptimo</span></td>
+      <td><strong>2.33 / 9.0</strong> <span class="badge-ok">Muy Calmo</span></td>
+      <td><strong>8.67 / 9.0</strong> <span class="badge-ok">Control Total</span></td>
+      <td><strong>Flujo fluido y de baja carga cognitiva.</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 Resultados en Flujo Crítico B: Filtrado por Rango y Eliminación con Deshacer (10 s)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Usuario Evaluado</th>
+      <th>Paso Evaluado</th>
+      <th>Valencia (1–9)</th>
+      <th>Activación / Tensión (1–9)</th>
+      <th>Dominio / Control (1–9)</th>
+      <th>Observación y Punto Crítico Detectado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Usuario 1 (U1)</strong></td>
+      <td>Filtrar fecha/categoría y borrar con Deshacer</td>
+      <td><strong>8 / 9</strong> 😊</td>
+      <td><strong>3 / 9</strong> 🙂</td>
+      <td><strong>9 / 9</strong> 👑</td>
+      <td><em>"El botón Deshacer con el contador de 10 segundos me quitó todo el miedo a borrar por error."</em></td>
+    </tr>
+    <tr>
+      <td><strong>Usuario 2 (U2)</strong></td>
+      <td>Filtrar por rango de monto y fecha</td>
+      <td><strong>6 / 9</strong> 🙂<br><span class="badge-warn">&rarr; 8/9 tras ajuste</span></td>
+      <td><strong>5 / 9</strong> 😬<br><span class="badge-warn">&rarr; 2/9 tras ajuste</span></td>
+      <td><strong>7 / 9</strong> 😎<br><span class="badge-warn">&rarr; 9/9 tras ajuste</span></td>
+      <td><strong>Hallazgo crítico inicial:</strong> Al abrir el desplegable de <em>Fecha</em> o <em>Monto</em>, buscaba un botón «Filtrar» dentro del mismo cuadrito flotante.</td>
+    </tr>
+    <tr>
+      <td><strong>Usuario 3 (U3)</strong></td>
+      <td>Confirmación multimodal de eliminación</td>
+      <td><strong>8 / 9</strong> 😊</td>
+      <td><strong>3 / 9</strong> 🙂</td>
+      <td><strong>8 / 9</strong> 😎</td>
+      <td><em>"Al abrir el modal de eliminar, el foco ya estaba en Cancelar por seguridad y me mostró el nombre exacto del gasto."</em></td>
+    </tr>
+    <tr>
+      <td><strong>PROMEDIO FLUJO B</strong></td>
+      <td><strong>N = 3 usuarios</strong></td>
+      <td><strong>7.33 / 9.0</strong><br>(8.33 post-ajuste)</td>
+      <td><strong>3.67 / 9.0</strong><br>(2.67 post-ajuste)</td>
+      <td><strong>8.00 / 9.0</strong><br>(8.67 post-ajuste)</td>
+      <td><strong>Se identificó y corrigió la fricción en el popover de filtros.</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Diagnóstico de Puntos Críticos y Ajustes Aplicados en la Interfaz de Astro</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pantalla / Paso con Puntuación Menos Favorable</th>
+      <th>Diagnóstico Emocional (SAM)</th>
+      <th>Ajuste Implementado en el Código de Astro</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Desplegable de Filtros (<code>.filter-popover</code> en <code>src/pages/movimientos.astro</code>)</strong></td>
+      <td>En la prueba inicial del Usuario 2, la activación subió a <strong>5/9</strong> y la valencia bajó a <strong>6/9</strong> porque tras elegir la fecha <em>Desde/Hasta</em> tenía que cerrar el popover y buscar el botón general de filtrar.</td>
+      <td>Se incorporó un botón primario <strong><code>&lt;button type="submit" class="primary-button popover-filter-btn"&gt;Filtrar&lt;/button&gt;</code></strong> directamente dentro de cada popover (Fecha, Categoría y Monto), además de búsqueda en vivo instantánea (<code>data-live-search</code>).</td>
+    </tr>
+    <tr>
+      <td><strong>2. Selección de Categorías en Modo Profesional (<code>MovementDialog.astro</code>)</strong></td>
+      <td>El Usuario 2 reportó ligera demora al buscar <em>Honorarios</em> y <em>Servicios</em> cuando cambiaba a la cuenta Profesional.</td>
+      <td>Se configuró <code>PREFERRED_POOLS</code> en <code>MovementDialog.astro</code> y <code>finance.js</code> para que el Modo Profesional priorice automáticamente <em>Servicios, Compras, Transporte, Alimentación</em> (Gastos) y <em>Honorarios, Ventas, Ingresos</em> (Ingresos).</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

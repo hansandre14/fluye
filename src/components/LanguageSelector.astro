@@ -1,0 +1,13 @@
+---
+import { LANGUAGES, getLocale, createTranslator } from '../i18n/index.js';
+const { id = 'fluye-language' } = Astro.props;
+const locale = getLocale(Astro);
+const t = createTranslator(locale);
+---
+<label class="language-selector" for={id}>
+  <span aria-hidden="true">◎</span>
+  <span data-i18n="language.label">{t('language.label')}</span>
+  <select id={id} name="language" data-language-select>
+    {Object.entries(LANGUAGES).map(([value, label]) => <option value={value} selected={value === locale} lang={value + '-PE'}>{label}</option>)}
+  </select>
+</label>

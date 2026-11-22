@@ -1,0 +1,774 @@
+{
+  "cases": 96,
+  "browserErrors": [],
+  "results": [
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 320,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 320,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 320,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 320,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 320,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 320,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 320,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 320,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 320,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 360,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 360,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 360,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 360,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 360,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 360,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 360,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 360,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 360,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 390,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 390,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 390,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 390,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 390,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 390,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 390,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 390,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 390,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 768,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 768,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 768,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 768,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 768,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 768,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 768,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 768,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 768,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1024,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1024,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=personal",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/dashboard?cuenta=profesional",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/registro?cuenta=personal",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1440,
+      "lang": "es",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 0,
+      "issues": [],
+      "missing": []
+    },
+    {
+      "path": "/movimientos?cuenta=personal",
+      "width": 1440,
+      "lang": "qu",
+      "expansion": 35,
+      "issues": [],
+      "missing": []
+    }
+  ]
+}

@@ -1,0 +1,343 @@
+---
+/**
+ * src/components/FirmasMultimodales.astro
+ * Panel interactivo de Firmas Multimodales (Actividad 14), Recuperación Guiada (404, 500, Sin Red)
+ * y Escala Visual SAM (Self-Assessment Manikin) en vivo.
+ */
+import { MULTIMODAL_SIGNATURES } from '../lib/feedback/audioFeedback.js';
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+const signatures = Object.values(MULTIMODAL_SIGNATURES);
+---
+
+<section class="finance-card multimodal-card" aria-labelledby="multimodal-title">
+  <details class="multimodal-details" open>
+    <summary class="multimodal-summary">
+      <div>
+        <strong id="multimodal-title" data-i18n="signatures.title">{t('signatures.title')}</strong>
+        <span data-i18n="signatures.description">{t('signatures.description')}</span>
+      </div>
+      <span class="finance-pill multimodal-badge" data-i18n="signatures.badge">{t('signatures.badge')}</span>
+    </summary>
+
+    <div class="multimodal-content">
+      <div class="multimodal-grid">
+        {signatures.map((sig) => (
+          <button
+            type="button"
+            class:list={['multimodal-btn', `multimodal-${sig.id}`]}
+            data-test-signature={sig.id}
+            aria-label={t('signatures.test', { name: t(`signatures.${sig.id}Label`) })}
+            data-i18n-aria-label="signatures.test"
+            data-i18n-params={JSON.stringify({ name: t(`signatures.${sig.id}Label`) })}
+            data-i18n-param-keys={JSON.stringify({ name: `signatures.${sig.id}Label` })}
+          >
+            <div class="multimodal-btn-top">
+              <strong data-i18n={`signatures.${sig.id}Label`}>{t(`signatures.${sig.id}Label`)}</strong>
+              <span class="multimodal-pill">{sig.durationMs} ms</span>
+            </div>
+            <p data-i18n={`signatures.${sig.id}Description`}>{t(`signatures.${sig.id}Description`)}</p>
+            <small>
+              🔊 {sig.freqStart}→{sig.freqEnd} Hz ({sig.wave}) · 📳 [{sig.vibratePattern.join(', ')}] ms
+            </small>
+          </button>
+        ))}
+      </div>
+      <p class="multimodal-live" role="status" aria-live="polite" data-multimodal-status data-i18n="signatures.initial">
+        {t('signatures.initial')}
+      </p>
+
+      <div class="ihc-lab-divider"></div>
+
+      <div class="ihc-lab-subgrid">
+        <div class="ihc-recovery-box">
+          <strong>🛡️ Recuperación Guiada (404, 500 y Sin Red)</strong>
+          <p>Verifica en 1 clic las experiencias de recuperación sin pérdida de contexto:</p>
+          <div class="ihc-recovery-links">
+            <button type="button" class="finance-pill ihc-demo-pill" data-trigger-offline>
+              📡 Simular Sin Red (Offline)
+            </button>
+            <a class="finance-pill ihc-demo-pill" href="/ruta-inexistente-demo">
+              🧭 Vista 404 Guiada
+            </a>
+            <a class="finance-pill ihc-demo-pill" href="/error-500">
+              ⚙️ Vista 500 Guiada
+            </a>
+          </div>
+        </div>
+
+        <div class="ihc-sam-box" aria-label="Evaluación rápida Escala Visual SAM">
+          <strong>😊 Escala Visual SAM (Self-Assessment Manikin)</strong>
+          <p>Registra tu respuesta afectiva tras ejecutar este flujo (1 a 9):</p>
+          <div class="sam-dimensions">
+            <div class="sam-row">
+              <span>Valencia (Agrado):</span>
+              <div class="sam-scale" data-sam-dimension="valencia">
+                <button type="button" data-sam-val="2" title="Desagrado (2)">😟 2</button>
+                <button type="button" data-sam-val="5" title="Neutral (5)">😐 5</button>
+                <button type="button" data-sam-val="7" title="Agradable (7)">🙂 7</button>
+                <button type="button" data-sam-val="9" class="is-selected" title="Muy satisfactorio (9)">😄 9</button>
+              </div>
+            </div>
+            <div class="sam-row">
+              <span>Activación (Calma):</span>
+              <div class="sam-scale" data-sam-dimension="activacion">
+                <button type="button" data-sam-val="2" class="is-selected" title="Muy calmo / Sin estrés (2)">😌 2</button>
+                <button type="button" data-sam-val="4" title="Atento (4)">🙂 4</button>
+                <button type="button" data-sam-val="7" title="Tenso (7)">😬 7</button>
+                <button type="button" data-sam-val="9" title="Alta tensión (9)">😰 9</button>
+              </div>
+            </div>
+            <div class="sam-row">
+              <span>Dominio (Control):</span>
+              <div class="sam-scale" data-sam-dimension="dominio">
+                <button type="button" data-sam-val="2" title="Bajo control (2)">🫣 2</button>
+                <button type="button" data-sam-val="5" title="Control medio (5)">🧐 5</button>
+                <button type="button" data-sam-val="8" title="Alto control (8)">😎 8</button>
+                <button type="button" data-sam-val="9" class="is-selected" title="Control total (9)">👑 9</button>
+              </div>
+            </div>
+          </div>
+          <small class="sam-summary" data-sam-output role="status" aria-live="polite">
+            Puntaje SAM actual: Valencia 9/9 · Activación 2/9 (Calma) · Dominio 9/9 (Control total)
+          </small>
+        </div>
+      </div>
+    </div>
+  </details>
+</section>
+
+<script>
+  import { triggerSignature } from '../lib/feedback/audioFeedback.js';
+  import { t, setText } from '../i18n/client.js';
+
+  document.addEventListener('fluye:languagechange', () => {
+    for (const button of document.querySelectorAll('[data-test-signature]')) {
+      const params = { name: t(`signatures.${button.dataset.testSignature}Label`) };
+      button.dataset.i18nParams = JSON.stringify(params);
+      button.setAttribute('aria-label', t('signatures.test', params));
+    }
+    const status = document.querySelector('[data-multimodal-status]');
+    if (status?.dataset.signatureId) {
+      const params = JSON.parse(status.dataset.i18nParams || '{}');
+      params.name = t(`signatures.${status.dataset.signatureId}Label`);
+      setText(status, 'signatures.executed', params);
+    }
+  });
+
+  for (const btn of document.querySelectorAll('[data-test-signature]')) {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.testSignature;
+      btn.setAttribute('data-active-pulse', 'true');
+      window.setTimeout(() => btn.removeAttribute('data-active-pulse'), 260);
+
+      const sig = triggerSignature(type, { forceAudio: true, enableAudio: true, enableHaptic: true });
+      const status = document.querySelector('[data-multimodal-status]');
+      if (status) {
+        status.dataset.signatureId = sig.id;
+        setText(status, 'signatures.executed', { name: t(`signatures.${sig.id}Label`), start: sig.freqStart, end: sig.freqEnd, duration: sig.durationMs, pattern: sig.vibratePattern.join(', ') });
+      }
+    });
+  }
+
+  for (const offlineBtn of document.querySelectorAll('[data-trigger-offline]')) {
+    offlineBtn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('fluye:simulate-offline'));
+    });
+  }
+
+  const samState = { valencia: 9, activacion: 2, dominio: 9 };
+  for (const group of document.querySelectorAll('[data-sam-dimension]')) {
+    const dim = group.getAttribute('data-sam-dimension');
+    for (const btn of group.querySelectorAll('button[data-sam-val]')) {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach((b) => b.classList.remove('is-selected'));
+        btn.classList.add('is-selected');
+        samState[dim] = Number(btn.getAttribute('data-sam-val'));
+        triggerSignature('progreso', { forceAudio: false, enableAudio: true, enableHaptic: true });
+        for (const out of document.querySelectorAll('[data-sam-output]')) {
+          out.textContent = `Puntaje SAM registrado: Valencia ${samState.valencia}/9 · Activación ${samState.activacion}/9 · Dominio ${samState.dominio}/9`;
+        }
+      });
+    }
+  }
+</script>
+
+<style>
+  .multimodal-card {
+    margin-top: 20px;
+    padding: 16px 22px;
+  }
+  .multimodal-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .multimodal-summary::-webkit-details-marker {
+    display: none;
+  }
+  .multimodal-summary strong {
+    display: block;
+    font-size: 16px;
+    color: var(--finance-ink);
+  }
+  .multimodal-summary span {
+    font-size: 13px;
+    color: var(--finance-muted);
+  }
+  .multimodal-badge {
+    min-height: 34px;
+    padding: 4px 12px;
+    font-size: 12px;
+    background: var(--finance-mint);
+    color: var(--account-accent);
+    border-color: transparent;
+  }
+  .multimodal-content {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--finance-border);
+  }
+  .multimodal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .multimodal-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1.5px solid var(--finance-border);
+    background: var(--finance-surface);
+    color: var(--finance-ink);
+    text-align: left;
+    transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), border-color 150ms ease, box-shadow 150ms ease;
+  }
+  .multimodal-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+  }
+  .multimodal-btn[data-active-pulse="true"] {
+    transform: scale(0.96);
+  }
+  .multimodal-exito { border-left: 5px solid #10b981; }
+  .multimodal-error { border-left: 5px solid #dc2626; }
+  .multimodal-cancelacion { border-left: 5px solid #f59e0b; }
+  .multimodal-progreso { border-left: 5px solid #3b82f6; }
+  .multimodal-btn-top {
+    flex-wrap: wrap;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .multimodal-pill {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--finance-mint);
+    color: var(--account-accent);
+  }
+  .multimodal-btn p {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--finance-muted);
+  }
+  .multimodal-btn small {
+    font-size: 11.5px;
+    font-weight: 750;
+    color: var(--account-link);
+  }
+  .multimodal-live {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--account-accent);
+  }
+  .ihc-lab-divider {
+    height: 1px;
+    background: var(--finance-border);
+    margin: 16px 0;
+  }
+  .ihc-lab-subgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .ihc-recovery-box,
+  .ihc-sam-box {
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--finance-border);
+    background: var(--finance-surface);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ihc-recovery-box strong,
+  .ihc-sam-box strong {
+    font-size: 14px;
+    color: var(--finance-ink);
+  }
+  .ihc-recovery-box p,
+  .ihc-sam-box p {
+    font-size: 12.5px;
+    color: var(--finance-muted);
+  }
+  .ihc-recovery-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .ihc-demo-pill {
+    font-size: 12.5px;
+    padding: 6px 12px;
+  }
+  .sam-dimensions {
+    display: grid;
+    gap: 6px;
+  }
+  .sam-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+  .sam-scale {
+    display: flex;
+    gap: 5px;
+  }
+  .sam-scale button {
+    min-height: 32px !important;
+    padding: 3px 9px;
+    border-radius: 10px;
+    border: 1px solid var(--finance-border);
+    background: var(--finance-surface);
+    color: var(--finance-ink);
+    font-size: 12px;
+    font-weight: 750;
+  }
+  .sam-scale button.is-selected {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .sam-summary {
+    font-size: 12px;
+    font-weight: 750;
+    color: var(--account-accent);
+  }
+</style>

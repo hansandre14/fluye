@@ -1,0 +1,99 @@
+---
+import { getLocale, createTranslator, categoryKey } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+import { randomUUID } from 'node:crypto';
+import { ACCOUNTS, CATEGORIES, KINDS, dateLabel, today } from '../lib/finance.js';
+import { movementDefaults } from '../server/movements.js';
+const { userId, account, returnTo, movement = null, standalone = false } = Astro.props;
+const Container = standalone ? 'section' : 'dialog';
+const date = today();
+const kind = movement?.kind ?? 'gasto';
+const selectedAccount = movement?.account ?? account;
+const defaults = Object.fromEntries(await Promise.all(Object.keys(ACCOUNTS).map(async (key) => [key, await movementDefaults(userId, key)])));
+const preferredPools = {
+  personal: {
+    gasto: ['Alimentación', 'Transporte', 'Servicios', 'Salud'],
+    ingreso: ['Salario', 'Ingresos', 'Honorarios', 'Otros ingresos'],
+  },
+  profesional: {
+    gasto: ['Servicios', 'Compras', 'Transporte', 'Alimentación'],
+    ingreso: ['Honorarios', 'Ventas', 'Ingresos', 'Otros ingresos'],
+  },
+};
+const preferredForAccount = preferredPools[selectedAccount]?.[kind] ?? CATEGORIES[kind];
+const suggested = defaults[selectedAccount].categories[kind] ?? preferredForAccount[0];
+const activeCategory = movement?.category ?? suggested ?? CATEGORIES[kind][0];
+const quickCategories = [
+  ...(suggested ? [suggested] : []),
+  ...preferredForAccount.filter((cat) => cat !== suggested),
+  ...CATEGORIES[kind].filter((cat) => cat !== suggested && !preferredForAccount.includes(cat)),
+].slice(0, 4);
+---
+<Container class={standalone ? 'finance-card movement-standalone' : 'finance-dialog movement-dialog'} id="movement-dialog" aria-labelledby="movement-title" data-auto-open={movement ? 'true' : undefined} data-return={movement ? returnTo : undefined}>
+  <header class="dialog-heading">
+    <div><h2 id="movement-title" data-i18n={movement ? 'movement.editTitle' : 'movement.createTitle'}>{t(movement ? 'movement.editTitle' : 'movement.createTitle')}</h2><p data-i18n="movement.intro">{t('movement.intro')}</p></div>
+    {!standalone && <button class="dialog-x" type="button" aria-label={t('movement.closeForm')} data-i18n-aria-label="movement.closeForm" data-close-dialog>×</button>}
+  </header>
+  <form method="post" action="/api/movimientos" data-mutation data-movement-form data-defaults={JSON.stringify(defaults)} data-categories={JSON.stringify(CATEGORIES)} data-account={account} data-today={date} data-today-label={dateLabel(date)}>
+    <input type="hidden" name="action" value={movement ? 'editar' : 'crear'} />
+    <input type="hidden" name="id" value={movement?.id ?? randomUUID()} />
+    <input type="hidden" name="returnTo" value={returnTo} />
+    <div class="movement-dialog-grid">
+      <div class="movement-fields">
+        <fieldset class="segments movement-kind">
+          <legend class="visually-hidden" data-i18n="movement.kind">{t('movement.kind')}</legend>
+          {Object.entries(KINDS).map(([key, label]) => <label><input type="radio" name="kind" value={key} checked={key === kind} /><span data-i18n={'kinds.' + key}>{t('kinds.' + key)}</span></label>)}
+        </fieldset>
+        <label class="finance-field"><span><span data-i18n="movement.amount">{t('movement.amount')}</span> <small data-i18n="movement.required">{t('movement.required')}</small></span>
+          <span class="money-input"><span aria-hidden="true">S/</span><input name="amount" inputmode="decimal" placeholder={t('movement.amountPlaceholder')} data-i18n-placeholder="movement.amountPlaceholder" required maxlength="10" pattern="[0-9]{1,7}([.,][0-9]{1,2})?" value={movement ? (movement.amount / 100).toFixed(2) : ''} autofocus /></span>
+          <small data-i18n="movement.amountHelp">{t('movement.amountHelp')}</small>
+        </label>
+        <label class="finance-field"><span data-i18n="movement.concept">{t('movement.concept')}</span><input name="concept" list="concept-history" maxlength="80" placeholder={t('movement.conceptPlaceholder')} data-i18n-placeholder="movement.conceptPlaceholder" value={movement?.concept ?? ''} required /><small data-i18n="movement.conceptHelp">{t('movement.conceptHelp')}</small></label>
+        <datalist id="concept-history">{defaults[selectedAccount].concepts.map((concept) => <option value={concept} />)}</datalist>
+
+        <div class="hick-suggestions" aria-label={t('movement.suggestedCategories')} data-i18n-aria-label="movement.suggestedCategories">
+          <span class="hick-label" data-i18n="movement.quickCategories">{t('movement.quickCategories')}</span>
+          <div class="hick-chips" data-hick-chips>
+            {quickCategories.map((cat) => (
+              <button
+                type="button"
+                class:list={['hick-chip', { 'is-active': cat === activeCategory }]}
+                data-hick-category={cat}
+                data-i18n={categoryKey(cat)}
+                aria-pressed={String(cat === activeCategory)}
+              >
+                {t(categoryKey(cat))}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="field-pair">
+          <label class="finance-field"><span data-i18n="movement.category">{t('movement.category')}</span><select name="category" required>
+            <option value="" data-i18n="movement.chooseCategory">{t('movement.chooseCategory')}</option>
+            {Object.entries(CATEGORIES).flatMap(([type, categories]) => categories.map((category) => <option value={category} data-kind={type} hidden={type !== kind} disabled={type !== kind} selected={category === (movement?.category ?? suggested)} data-i18n={categoryKey(category)}>{t(categoryKey(category))}</option>))}
+          </select><small data-category-hint data-i18n={suggested && !movement ? 'movement.categorySuggested' : 'movement.categoryHelp'}>{t(suggested && !movement ? 'movement.categorySuggested' : 'movement.categoryHelp')}</small></label>
+          <label class="finance-field"><span data-i18n="movement.date">{t('movement.date')}</span><input type="date" name="date" max={date} value={movement?.date ?? date} required /><small data-i18n="movement.dateHelp">{t('movement.dateHelp')}</small></label>
+        </div>
+        <fieldset class="segments movement-account"><legend data-i18n="movement.account">{t('movement.account')}</legend>
+          {Object.entries(ACCOUNTS).map(([key, label]) => <label><input type="radio" name="account" value={key} checked={key === selectedAccount} /><span data-i18n={'accounts.' + key}>{t('accounts.' + key)}</span></label>)}
+        </fieldset>
+        <label class="finance-field"><span><span data-i18n="movement.note">{t('movement.note')}</span> <small data-i18n="movement.optional">{t('movement.optional')}</small></span><textarea name="note" rows="2" maxlength="400" placeholder={t('movement.notePlaceholder')} data-i18n-placeholder="movement.notePlaceholder">{movement?.note ?? ''}</textarea></label>
+      </div>
+      <aside class="movement-tips">
+        <strong data-i18n="movement.tipsTitle">{t('movement.tipsTitle')}</strong>
+        <p data-i18n="movement.tipsBody">{t('movement.tipsBody')}</p>
+        <dl><dt data-tip-date-label data-i18n={movement ? 'movement.recordedDate' : 'movement.today'}>{t(movement ? 'movement.recordedDate' : 'movement.today')}</dt><dd data-tip-date>{dateLabel(movement?.date ?? date)}</dd>
+          <dt data-tip-account data-i18n={'accounts.' + selectedAccount}>{t('accounts.' + selectedAccount)}</dt><dd data-i18n="movement.accountHelp">{t('movement.accountHelp')}</dd>
+          <dt data-tip-category data-i18n={movement?.category || suggested ? categoryKey(movement?.category ?? suggested) : 'movement.category'}>{t(movement?.category || suggested ? categoryKey(movement?.category ?? suggested) : 'movement.category')}</dt><dd data-i18n="movement.categoryHistoryHelp">{t('movement.categoryHistoryHelp')}</dd>
+        </dl>
+        <strong data-i18n="movement.editable">{t('movement.editable')}</strong>
+      </aside>
+    </div>
+    <p class="finance-error" data-form-error role="alert" hidden></p>
+    <footer class="dialog-actions">
+      {standalone ? <a class="finance-pill" href={returnTo} data-i18n="common.cancel">{t('common.cancel')}</a> : <button class="finance-pill" type="button" data-close-dialog data-i18n="common.cancel">{t('common.cancel')}</button>}
+      <button class="primary-button" type="submit" data-entry-submit data-i18n={movement ? 'movement.saveChanges' : 'movement.saveMovement'}>{t(movement ? 'movement.saveChanges' : 'movement.saveMovement')}</button>
+    </footer>
+  </form>
+</Container>

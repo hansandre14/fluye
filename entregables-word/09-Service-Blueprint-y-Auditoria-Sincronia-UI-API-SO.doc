@@ -1,0 +1,174 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Service Blueprint y Auditoría de Sincronía UI-API-SO - Fluye</title>
+<style>
+  @page { size: A4 landscape; margin: 1.8cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.45; font-size: 10pt; }
+  h1 { color: #075e58; font-size: 16pt; border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 10px; }
+  h2 { color: #0f766e; font-size: 12.5pt; margin-top: 14px; margin-bottom: 6px; }
+  .meta { background: #e5f1ed; padding: 10px 14px; border-left: 5px solid #0f766e; margin-bottom: 14px; font-size: 9.8pt; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 9.2pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 7px 8px; border: 1px solid #075e58; }
+  td { padding: 7px 8px; border: 1px solid #cbd5e1; vertical-align: top; }
+  .layer-user { background: #ecfdf5; font-weight: bold; color: #065f46; }
+  .layer-front { background: #eff6ff; font-weight: bold; color: #1e40af; }
+  .layer-back { background: #fefce8; font-weight: bold; color: #854d0e; }
+  .layer-os { background: #f3e8ff; font-weight: bold; color: #6b21a8; }
+  .line-sep td { background: #0f766e; color: #fff; font-weight: bold; font-size: 8.5pt; text-align: center; padding: 3px; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Construcción del Service Blueprint y Auditoría de Sincronía UI–API–SO sobre la Plataforma en Astro</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 SSR + Node.js v24 + MySQL 8)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)<br>
+  <strong>Flujo Operativo Principal Mapeado End-to-End:</strong> Registro Asistido, Validación Idempotente, Persistencia en MySQL 8 + Respaldo Portable en Sistema de Archivos del SO y Eliminación Reversible (10 s).
+</div>
+
+<h2>1. Diagrama Completo del Service Blueprint End-to-End (UI Astro &harr; API Node.js &harr; MySQL 8 &amp; Sistema Operativo)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 14%;">Capa del Blueprint</th>
+      <th style="width: 17%;">Fase 1: Apertura y Selección Asistida (Ley de Hick)</th>
+      <th style="width: 17%;">Fase 2: Envío del Formulario (Mutación Asíncrona)</th>
+      <th style="width: 18%;">Fase 3: Procesamiento, Idempotencia y Escritura</th>
+      <th style="width: 17%;">Fase 4: Confirmación Multimodal y Rehidratación SSR</th>
+      <th style="width: 17%;">Fase 5: Eliminación Reversible (Ventana de 10 s) y Exportación CSV</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="layer-user">1. ACCIONES DEL USUARIO<br><small>(Lo que hace la persona)</small></td>
+      <td>El usuario toca una plantilla rápida (ej. <em>+ Honorarios</em>) o elige una de las 4 píldoras de categoría sugeridas y digita el monto en soles (<code>S/</code>).</td>
+      <td>El usuario presiona <strong>«Guardar movimiento»</strong> (o pulsa <code>Enter</code>).</td>
+      <td>El usuario espera ~150 ms observando el estado de procesamiento sin hacer doble clic.</td>
+      <td>El usuario escucha el acorde de éxito (320 ms), percibe la vibración háptica y visualiza su nuevo saldo y el banner de confirmación.</td>
+      <td>El usuario pulsa <em>Eliminar</em> &rarr; confirma en el modal &rarr; pulsa <strong>«Deshacer»</strong> antes de 10 s, o pulsa <strong>«Exportar CSV»</strong>.</td>
+    </tr>
+    <tr class="line-sep"><td colspan="6">─── LÍNEA DE INTERACCIÓN (Usuario &harr; Interfaz Visible) ───</td></tr>
+    <tr>
+      <td class="layer-front">2. FRONTSTAGE (UI en Astro v6 + Cliente JS)<br><small>(Lo que la pantalla muestra o responde)</small></td>
+      <td>
+        • <code>MovementDialog.astro</code> renderiza las 4 píldoras contextuales (<code>[data-hick-chips]</code>).<br>
+        • Al tocar un chip, ejecuta la microinteracción <code>chipConfirmPulse</code> (180 ms) + tono <code>progreso</code>.<br>
+        • Guarda borrador preventivo en <code>sessionStorage</code>.
+      </td>
+      <td>
+        • <code>finance.js</code> activa <code>aria-busy="true"</code> y deshabilita botones.<br>
+        • El botón cambia a <strong>«Procesando…»</strong>.<br>
+        • El badge superior cambia a <code>⟳ Sincronizando con API y MySQL 8…</code>.<br>
+        • Dispara firma <code>progreso</code>.
+      </td>
+      <td>
+        • Si no hay red (Offline), despliega <code>[data-offline-banner]</code> y conserva el formulario con <code>data-pending-retry="true"</code>.<br>
+        • Si hay error 400, ejecuta <code>fieldErrorShake</code> (220 ms) + firma <code>error</code>.
+      </td>
+      <td>
+        • Al recibir HTTP 200 OK, actualiza badge a <code>✓ Guardado en MySQL 8</code>.<br>
+        • Dispara firma polifónica <code>exito</code> (Do5&rarr;Mi5&rarr;Sol5) y espera <code>160 ms</code>.<br>
+        • Navega a <code>result.next</code> mostrando <code>FinanceNotice.astro</code>.
+      </td>
+      <td>
+        • <code>&lt;fluye-delete-button&gt;</code> ejecuta <code>sensory-press</code> + firma <code>cancelacion</code>.<br>
+        • <code>FinanceNotice.astro</code> muestra barra regresiva lineal de <code>10s &rarr; 0s</code>.<br>
+        • En CSV: muestra <code>⬇ Generando CSV desde MySQL 8…</code>.
+      </td>
+    </tr>
+    <tr class="line-sep"><td colspan="6">─── LÍNEA DE VISIBILIDAD (Frontstage Visible &harr; Backstage Invisible al Usuario) ───</td></tr>
+    <tr>
+      <td class="layer-back">3. BACKSTAGE (API Astro SSR y Lógica de Negocio)<br><small>(<code>/api/movimientos</code>, <code>movements.js</code>)</small></td>
+      <td>
+        • SSR consulta <code>movementDefaults(userId, account)</code> para precalcular la última categoría usada y los 12 conceptos frecuentes del <code>&lt;datalist&gt;</code>.<br>
+        • Genera un <code>randomUUID()</code> único en el campo oculto <code>id</code>.
+      </td>
+      <td>
+        • <code>financeForm(context)</code> valida origen CSRF (<code>SameSite=Lax</code> + cabecera <code>Origin</code>) y sesión autenticada (hash SHA-256 de cookie <code>fluye_auth</code>).
+      </td>
+      <td>
+        • <code>parseMovement(data)</code> valida UUID, tipo, cuenta, monto en céntimos enteros (<code>cents()</code>), categoría válida y fecha &le; hoy (<code>America/Lima</code>).<br>
+        • <code>saveMovement()</code> captura <code>ER_DUP_ENTRY</code> para garantizar idempotencia ante reintentos.
+      </td>
+      <td>
+        • <code>financeRedirect()</code> detecta cabecera <code>Accept: application/json</code> y devuelve <code>{ ok: true, next: "/dashboard?cuenta=...&amp;aviso=creado" }</code>.<br>
+        • El siguiente GET SSR recalcula <code>dashboardData()</code> en paralelo (<code>Promise.all</code>).
+      </td>
+      <td>
+        • <strong>Soft-delete temporal:</strong> <code>setDeleted()</code> marca <code>deleted_at = Date.now()</code> y purga borrados &gt; 10 000 ms.<br>
+        • <strong>Deshacer:</strong> Si <code>Date.now() - deleted_at &le; 10000</code>, restaura <code>deleted_at = NULL</code>.<br>
+        • <strong>CSV:</strong> Sanitiza fórmulas (<code>'=1+1</code>) y añade BOM UTF-8 (<code>\uFEFF</code>).
+      </td>
+    </tr>
+    <tr class="line-sep"><td colspan="6">─── LÍNEA DE INTERACCIÓN INTERNA (Aplicación &harr; Servicios de Soporte y Sistema Operativo) ───</td></tr>
+    <tr>
+      <td class="layer-os">4. PROCESOS DE SOPORTE / SISTEMA OPERATIVO Y PERSISTENCIA<br><small>(Node.js Event Loop, TCP/IP, MySQL 8, File System)</small></td>
+      <td>
+        • Pool de conexiones TCP/IP <code>mysql2/promise</code> (<code>connectionLimit: 6</code>) con autodetección de puerto local (<code>3307</code> / <code>3306</code>) en <code>127.0.0.1</code>.<br>
+        • Web Audio API inicializa <code>AudioContext</code> y <code>DynamicsCompressorNode</code> en el hilo de audio del SO.
+      </td>
+      <td>
+        • Socket HTTP local con <code>AbortSignal.timeout(12000)</code> para evitar descriptores colgados en el SO si la red falla.
+      </td>
+      <td>
+        • Motor InnoDB de <strong>MySQL 8.4</strong> ejecuta <code>INSERT INTO movements</code> con bloqueo a nivel de fila e índices compuestos.<br>
+        • En segundo plano (asíncrono no bloqueante), <code>exportPortableBackup()</code> escribe en el sistema de archivos NTFS/SO: <code>data/respaldo-fluye.json</code> y <code>docs/respaldo-fluye.sql</code>.
+      </td>
+      <td>
+        • Subsistema de audio del SO mezcla los 2 osciladores sintetizados; en móviles Android el kernel invoca el actuador háptico vía <code>navigator.vibrate([60])</code>.
+      </td>
+      <td>
+        • En exportación CSV, Node.js genera un stream en memoria con cabecera <code>Content-Disposition: attachment</code> y el gestor de archivos del SO descarga <code>Fluye-cuenta-YYYY-MM-DD.csv</code>.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Registro de Auditoría de Sincronía UI–API–SO sobre la Plataforma en Astro</h2>
+
+<p>Se recorrió el flujo completo auditando la coherencia entre lo que ocurre en el servidor/SO y lo que percibe el usuario en la pantalla, corrigiendo <strong>3 puntos de desfase</strong>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Punto del Flujo Auditado</th>
+      <th>Desfase UI–API–SO Detectado Anteriormente</th>
+      <th>Ajuste Implementado en la Plataforma Astro</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Escritura en MySQL 8 + Sincronización del Respaldo en Disco (<code>respaldo-fluye.json</code>) al Guardar</strong></td>
+      <td>Cuando la API confirmaba el guardado (HTTP 200), el cliente ejecutaba <code>window.location.assign()</code> en 0 ms, abortando en el hilo de audio del SO la reproducción del acorde de éxito y sin mostrar en la barra superior que el respaldo en disco y MySQL había concluido.</td>
+      <td>Se incorporó el indicador de estado en tiempo real <code>[data-sync-status]</code> en <code>FinanceLayout.astro</code> (<code>⟳ Sincronizando con API y MySQL 8… &rarr; ✓ Guardado en MySQL 8 y respaldo JSON</code>) junto con una ventana de <code>160 ms</code> para completar la reproducción del earcon polifónico antes de redirigir.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Generación y Descarga del Archivo CSV en el Sistema Operativo (<code>/api/movimientos/exportar</code>)</strong></td>
+      <td>Al hacer clic en <em>Exportar CSV</em> con más de 100 registros en la base de datos, el navegador solicitaba el archivo a Node.js y al SO sin ningún cambio visual ni auditivo en la UI, haciendo dudar al usuario de si su clic había funcionado.</td>
+      <td>En <code>src/scripts/finance.js</code> se interceptó el evento sobre <code>a[href^="/api/movimientos/exportar"]</code> para disparar la firma multimodal <code>progreso</code> y actualizar el indicador superior a <code>⬇ Generando CSV desde MySQL 8… &rarr; ✓ CSV exportado</code>.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Caída del Socket de Red del Sistema Operativo (Estado Offline) durante el llenado de formulario</strong></td>
+      <td>Si el sistema operativo perdía conectividad Wi-Fi/Ethernet antes de pulsar <em>Guardar</em>, el usuario no recibía aviso preventivo hasta que fallaba el <code>fetch</code>, temiendo perder los datos digitados.</td>
+      <td>Se vincularon los eventos a nivel de SO/navegador (<code>window.addEventListener('offline' / 'online')</code>) con el banner superior <code>[data-offline-banner]</code>, resguardo inmediato en <code>sessionStorage</code> y reenvío asistido al recuperar la conexión con <code>/api/health</code>.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

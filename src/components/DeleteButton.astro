@@ -1,0 +1,354 @@
+---
+/**
+ * src/components/DeleteButton.astro
+ * Implementa el Custom Element <fluye-delete-button> (confirmación multimodal WCAG 2.1 AAA)
+ * y el botón de fila para abrir el diálogo de eliminación.
+ * Contraste calculado en botón principal: Blanco (#FFFFFF) sobre #850B19 = 10.20:1 (Supera AAA >= 7:1).
+ */
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+interface Props {
+  movementId?: string;
+  movementName?: string;
+  label?: string;
+  variant?: 'row' | 'confirm';
+  type?: 'button' | 'submit';
+  dialogId?: string;
+  disabled?: boolean;
+}
+
+const {
+  movementId = '',
+  movementName = '',
+  label = 'ELIMINAR',
+  variant = 'confirm',
+  type = 'submit',
+  dialogId = 'delete-dialog',
+  disabled = false,
+} = Astro.props;
+---
+
+{variant === 'row' ? (
+  <button
+    type="button"
+    class="delete-action sensory-row-delete"
+    data-open-dialog={dialogId}
+    data-movement-id={movementId}
+    data-movement-name={movementName}
+    aria-label={t('movement.deleteRow', {name: movementName})} data-i18n-aria-label="movement.deleteRow" data-i18n-params={JSON.stringify({name: movementName})}
+    disabled={disabled}
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+      <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+    </svg>
+    <span data-i18n={['ELIMINAR', 'Eliminar'].includes(label) ? 'movement.deleteLabel' : undefined}>{['ELIMINAR', 'Eliminar'].includes(label) ? t('movement.deleteLabel') : label}</span>
+  </button>
+) : (
+  <fluye-delete-button>
+    <fieldset class="sensory-options" disabled={disabled}>
+      <legend data-i18n="movement.confirmResponse">{t('movement.confirmResponse')}</legend>
+      <label><input type="checkbox" data-delete-audio checked /> <span data-i18n="movement.sound">{t('movement.sound')}</span></label>
+      <label data-haptic-option hidden><input type="checkbox" data-delete-haptic checked /> <span data-i18n="movement.haptic">{t('movement.haptic')}</span></label>
+    </fieldset>
+
+    <button type={type} class="sensory-delete" disabled={disabled} aria-label={t('movement.deleteConfirm')} data-i18n-aria-label="movement.deleteConfirm">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
+        <path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
+      </svg>
+      <span data-submit-label data-i18n={['ELIMINAR', 'Eliminar', 'Eliminar movimiento'].includes(label) ? (label === 'Eliminar movimiento' ? 'movement.deleteConfirm' : 'movement.deleteLabel') : undefined}>{['ELIMINAR', 'Eliminar', 'Eliminar movimiento'].includes(label) ? t(label === 'Eliminar movimiento' ? 'movement.deleteConfirm' : 'movement.deleteLabel') : label}</span>
+    </button>
+
+    <p class="sensory-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  </fluye-delete-button>
+)}
+
+<script>
+  import { triggerSignature } from '../lib/feedback/audioFeedback.js';
+  import { setText } from '../i18n/client.js';
+
+  class FluyeDeleteButton extends HTMLElement {
+    controller;
+    audio;
+
+    connectedCallback() {
+      if (this.controller) return;
+      this.controller = new AbortController();
+      const { signal } = this.controller;
+
+      const form = this.closest('form');
+      const button = this.querySelector('button');
+      const sound = this.querySelector('[data-delete-audio]');
+      const haptic = this.querySelector('[data-delete-haptic]');
+      const status = this.querySelector('[role="status"]');
+      const hapticLabel = this.querySelector('[data-haptic-option]');
+
+      if (!button || !sound || !haptic || !status) return;
+
+      const supportsHaptics = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+      if (hapticLabel) hapticLabel.hidden = !supportsHaptics;
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      sound.disabled = typeof AudioCtx !== 'function';
+      if (sound.disabled) {
+        const unavailable = document.createElement('span');
+        setText(unavailable, 'movement.audioUnavailable');
+        sound.closest('label')?.append(unavailable);
+      }
+
+      // Sincronizar estado inicial con preferencia global de sonido
+      if (document.documentElement.dataset.audioMuted === 'true') {
+        sound.checked = false;
+      }
+
+      sound.addEventListener('change', async () => {
+        if (!sound.checked) {
+          await this.audio?.suspend().catch(() => {});
+          return;
+        }
+        try {
+          this.audio ??= new AudioCtx();
+          await this.audio.resume();
+          if (this.audio.state !== 'running') throw new Error('Audio restringido');
+        } catch {
+          sound.checked = false;
+          setText(status, 'movement.audioDisabled');
+        }
+      }, { signal });
+
+      const confirmDelete = (event) => {
+        if ((event.submitter && event.submitter !== button) || button.disabled || form?.getAttribute('aria-busy') === 'true') return;
+
+        // Sincronía Multisensorial Estricta: Un mismo evento, sin await entre canales.
+        // 1. Canal Visual
+        button.classList.remove('sensory-confirm');
+        void button.offsetWidth;
+        button.classList.add('sensory-confirm');
+
+        // 2. Anuncio accesible ARIA (WCAG 4.1.3)
+        setText(status, 'movement.deleteRequested');
+
+        // 3. Canal Auditivo (660 Hz -> 440 Hz, 180 ms) + 4. Canal Háptico ([50, 30, 50] ms)
+        triggerSignature('cancelacion', {
+          forceAudio: sound.checked,
+          enableAudio: sound.checked,
+          enableHaptic: haptic.checked && supportsHaptics,
+        });
+      };
+
+      // Captura antes de que finance.js desactive los controles y envíe la petición.
+      form?.addEventListener('submit', confirmDelete, { capture: true, signal });
+
+      button.addEventListener('animationend', () => button.classList.remove('sensory-confirm'), { signal });
+
+      this.closest('dialog')?.addEventListener('close', () => {
+        status.textContent = '';
+        delete status.dataset.i18n;
+        delete status.dataset.i18nParams;
+        button.classList.remove('sensory-confirm');
+      }, { signal });
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort();
+      this.controller = undefined;
+      void this.audio?.close().catch(() => {});
+      this.audio = undefined;
+    }
+  }
+
+  if (!customElements.get('fluye-delete-button')) {
+    customElements.define('fluye-delete-button', FluyeDeleteButton);
+  }
+</script>
+
+<style>
+  /* Botón de fila en la tabla de Movimientos */
+  .sensory-row-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 6px 13px;
+    border-radius: 16px;
+    border: 1.5px solid #850b19;
+    background: #fff5f5;
+    color: #850b19;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 100ms ease, background-color 120ms ease, color 120ms ease;
+  }
+
+  .sensory-row-delete:hover:enabled {
+    background: #fee2e2;
+    color: #650713;
+    transform: translateY(-1px);
+    text-decoration: none;
+  }
+
+  .sensory-row-delete:active:enabled {
+    transform: translateY(1px) scale(0.96);
+  }
+
+  /* Custom Element de confirmación multimodal en el diálogo */
+  fluye-delete-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    color: var(--finance-ink, #171717);
+    background: transparent;
+    border-radius: 0.6rem;
+    max-width: 100%;
+  }
+
+  .sensory-options {
+    border: 1px solid var(--finance-border, #d4d8dd);
+    border-radius: 12px;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    background: var(--finance-surface, #f8fafc);
+  }
+
+  .sensory-options legend {
+    padding: 0 0.35rem;
+    font-weight: 800;
+    font-size: 0.78rem;
+    color: var(--finance-muted, #5a6270);
+  }
+
+  .sensory-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 36px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .sensory-options input {
+    width: 20px;
+    height: 20px;
+    accent-color: #850b19;
+  }
+
+  /* Blanco (#fff) sobre #850b19 = Ratio 10.20:1 (Cumple WCAG 2.1 AAA >= 7:1) */
+  button.sensory-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-width: 44px;
+    min-height: 48px;
+    padding: 0.75rem 1.1rem;
+    border: 2px solid #850b19;
+    border-radius: 0.85rem;
+    color: #ffffff;
+    background: #850b19;
+    box-shadow: 0 3px 0 #45050d;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 100ms ease, background-color 100ms ease;
+  }
+
+  button.sensory-delete:hover:enabled {
+    background: #650713;
+    transform: translateY(-1px);
+  }
+
+  button.sensory-delete:active:enabled {
+    transform: translateY(2px) scale(0.97);
+    box-shadow: none;
+  }
+
+  button.sensory-delete:focus-visible,
+  .sensory-row-delete:focus-visible,
+  .sensory-options input:focus-visible {
+    outline: 3px solid #111827;
+    outline-offset: 4px;
+    box-shadow: 0 0 0 4px #ffffff;
+  }
+
+  button.sensory-delete:disabled {
+    background: #595959;
+    border-color: #595959;
+    color: #ffffff;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .sensory-confirm {
+    animation: sensory-press 180ms ease-out;
+  }
+
+  @keyframes sensory-press {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(0.96); }
+  }
+
+  .sensory-status {
+    font-size: 0.82rem;
+    max-width: 28rem;
+    margin: 0;
+    text-align: end;
+    color: var(--finance-muted, #5a6270);
+  }
+
+  /* Adaptación en Modo Oscuro manteniendo ratio AAA */
+  :global(html[data-theme="dark"]) .sensory-row-delete {
+    background: #2c1215;
+    border-color: #f87171;
+    color: #fecaca;
+  }
+
+  :global(html[data-theme="dark"]) .sensory-row-delete:hover:enabled {
+    background: #451a1f;
+    border-color: #fca5a5;
+    color: #ffffff;
+  }
+
+  :global(html[data-theme="dark"]) button.sensory-delete:focus-visible,
+  :global(html[data-theme="dark"]) .sensory-row-delete:focus-visible,
+  :global(html[data-theme="dark"]) .sensory-options input:focus-visible {
+    outline-color: #5eead4;
+    box-shadow: 0 0 0 4px #111827;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button.sensory-delete,
+    .sensory-row-delete {
+      transition: none;
+      animation: none;
+    }
+    button.sensory-delete:hover:enabled,
+    button.sensory-delete:active:enabled,
+    .sensory-row-delete:hover:enabled,
+    .sensory-row-delete:active:enabled {
+      transform: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    button.sensory-delete,
+    .sensory-row-delete {
+      border-color: ButtonText;
+    }
+    button.sensory-delete:focus-visible,
+    .sensory-row-delete:focus-visible,
+    .sensory-options input:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+</style>

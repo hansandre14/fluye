@@ -1,0 +1,131 @@
+---
+import FinanceLayout from '../layouts/FinanceLayout.astro';
+import FinanceNotice from '../components/FinanceNotice.astro';
+import MovementDialog from '../components/MovementDialog.astro';
+import { currentUser } from '../server/auth.js';
+import { privacyMode } from '../server/finance-http.js';
+import { dashboardData } from '../server/movements.js';
+import { accountFrom, dateLabel, soles } from '../lib/finance.js';
+import { getLocale, createTranslator, categoryKey } from '../i18n/index.js';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+const locale = getLocale(Astro);
+const t = createTranslator(locale);
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+const account = accountFrom(Astro.url.searchParams.get('cuenta'));
+const isPro = account === 'profesional';
+const hidden = privacyMode(Astro.cookies);
+const data = await dashboardData(user.id, account);
+const remaining = Math.round(100 * data.available / data.limit);
+const over = data.todaySpent > data.limit;
+const firstName = user.name.trim().split(/\s+/)[0];
+const returnTo = '/dashboard?cuenta=' + account;
+const netMonthResult = data.income - data.expenses;
+const metrics = [
+  {
+    labelKey: isPro ? 'dashboard.businessResult' : 'dashboard.totalBalance',
+    amount: isPro ? netMonthResult : data.balance,
+    hintKey: isPro ? 'dashboard.businessResultHint' : 'dashboard.balanceHint',
+  },
+  { labelKey: isPro ? 'dashboard.salesIncome' : 'dashboard.income', amount: data.income, hintKey: 'dashboard.thisMonth' },
+  { labelKey: isPro ? 'dashboard.operatingExpenses' : 'dashboard.expenses', amount: data.expenses, hintKey: 'dashboard.thisMonth' },
+];
+const titleKey = 'dashboard.greeting';
+const titleParams = { name: firstName };
+const subtitleKey = isPro ? 'dashboard.businessSubtitle' : 'dashboard.personalSubtitle';
+const subtitleParams = { date: dateLabel(data.date, true) };
+const spendingKey = isPro ? 'dashboard.businessSpending' : 'dashboard.personalSpending';
+const spendingParams = { limit: soles(data.limit, hidden), spent: soles(data.todaySpent, hidden) };
+const emptyKey = isPro ? 'dashboard.emptyBusiness' : 'dashboard.emptyPersonal';
+const limitDescriptionKey = isPro ? 'dashboard.limitBusiness' : 'dashboard.limitPersonal';
+const quickTemplates = isPro
+  ? [
+      { kind: 'ingreso', concept: 'Honorarios profesionales', category: 'Honorarios', labelKey: 'registro.fees' },
+      { kind: 'ingreso', concept: 'Venta a cliente', category: 'Ventas', labelKey: 'registro.sale' },
+      { kind: 'gasto', concept: 'Suscripción de software', category: 'Servicios', labelKey: 'registro.software' },
+      { kind: 'gasto', concept: 'Movilidad / Visita a cliente', category: 'Transporte', labelKey: 'registro.transport' },
+    ]
+  : [
+      { kind: 'gasto', concept: 'Almuerzo / Menú', category: 'Alimentación', labelKey: 'registro.lunch' },
+      { kind: 'gasto', concept: 'Transporte / Pasaje', category: 'Transporte', labelKey: 'registro.travel' },
+      { kind: 'gasto', concept: 'Compras del hogar', category: 'Alimentación', labelKey: 'registro.supermarket' },
+      { kind: 'ingreso', concept: 'Sueldo / Quincena', category: 'Salario', labelKey: 'registro.salary' },
+    ];
+---
+<FinanceLayout title={t(titleKey, titleParams)} subtitle={t(subtitleKey, subtitleParams)} {titleKey} {titleParams} {subtitleKey} {subtitleParams} {user} {account} {hidden} page="/dashboard" {returnTo}>
+  <FinanceNotice code={Astro.url.searchParams.get('aviso')} {returnTo} />
+  <div class="dashboard-grid">
+    <div class="dashboard-column">
+      <section class="finance-card spending-hero" aria-labelledby="spending-title">
+        <div class="spending-top"><h2 id="spending-title" data-i18n={isPro ? 'dashboard.businessBudget' : 'dashboard.spendToday'}>{t(isPro ? 'dashboard.businessBudget' : 'dashboard.spendToday')}</h2>
+          {!hidden && <button type="button" class="finance-link" data-open-dialog="limit-dialog" data-i18n="dashboard.adjustLimit">{t('dashboard.adjustLimit')}</button>}
+        </div>
+        <strong class="hero-number" data-testid="available">{soles(data.available, hidden)}</strong>
+        <p data-i18n={spendingKey} data-i18n-params={JSON.stringify(spendingParams)}>{t(spendingKey, spendingParams)}</p>
+        {!hidden && <div class="hero-progress">
+          <progress max="100" value={remaining} aria-label={t('dashboard.availablePercentage')} data-i18n-aria-label="dashboard.availablePercentage"></progress>
+          <span data-i18n="dashboard.remaining" data-i18n-params={JSON.stringify({ percentage: remaining })}>{t('dashboard.remaining', { percentage: remaining })}</span>
+        </div>}
+        {over && !hidden && <p class="finance-error" data-i18n="dashboard.overLimit" data-i18n-params={JSON.stringify({ amount: soles(data.todaySpent - data.limit) })}>{t('dashboard.overLimit', { amount: soles(data.todaySpent - data.limit) })}</p>}
+      </section>
+      <div class="finance-metrics">
+        {metrics.map(({ labelKey, amount, hintKey }) => <section class="finance-card metric">
+          <h2 data-i18n={labelKey}>{t(labelKey)}</h2><strong>{soles(amount, hidden)}</strong><p data-i18n={hintKey}>{t(hintKey)}</p>
+        </section>)}
+      </div>
+      <section class="finance-card envelopes">
+        <div class="card-heading"><h2 data-i18n={isPro ? 'dashboard.businessEnvelopes' : 'dashboard.personalEnvelopes'}>{t(isPro ? 'dashboard.businessEnvelopes' : 'dashboard.personalEnvelopes')}</h2><span data-i18n="dashboard.expenseByCategory">{t('dashboard.expenseByCategory')}</span></div>
+        {data.groups.length ? <ul>
+          {data.groups.slice(0, 4).map(({ category, amount }, i) => <li class={'envelope-' + i}>
+            <span class="envelope-dot" aria-hidden="true"></span><span data-i18n={categoryKey(category)}>{t(categoryKey(category))}</span><strong>{soles(amount, hidden)}</strong>
+          </li>)}
+        </ul> : <p class="empty-copy" data-i18n="dashboard.emptyCategories">{t('dashboard.emptyCategories')}</p>}
+      </section>
+    </div>
+    <div class="dashboard-column">
+      <section class="finance-card recent-card">
+        <div class="card-heading"><h2 data-i18n={isPro ? 'dashboard.recentBusiness' : 'dashboard.recentPersonal'}>{t(isPro ? 'dashboard.recentBusiness' : 'dashboard.recentPersonal')}</h2><a class="finance-link" href={'/movimientos?cuenta=' + account} data-i18n="dashboard.viewAll">{t('dashboard.viewAll')}</a></div>
+        {data.recent.length ? <ul class="recent-list">
+          {data.recent.map((row) => <li>
+            <span class="movement-initial" aria-hidden="true">{row.concept[0].toUpperCase()}</span>
+            <span class="recent-concept"><strong>{row.concept}</strong><small>{dateLabel(row.date)} · <span data-i18n={categoryKey(row.category)}>{t(categoryKey(row.category))}</span></small></span>
+            <strong class:list={['amount-text', { positive: row.kind === 'ingreso' }]}>{row.kind === 'ingreso' ? '+' : '−'} {soles(row.amount, hidden)}</strong>
+          </li>)}
+        </ul> : <div class="finance-empty"><span class="empty-icon" aria-hidden="true">↗</span><h3 data-i18n="dashboard.noMovements">{t('dashboard.noMovements')}</h3><p data-i18n={emptyKey}>{t(emptyKey)}</p><button type="button" class="finance-link" data-open-dialog="movement-dialog" data-i18n="dashboard.registerMovement">{t('dashboard.registerMovement')}</button></div>}
+      </section>
+      <section class="finance-card quick-add">
+        <h2 data-i18n="dashboard.whatToRecord">{t('dashboard.whatToRecord')}</h2>
+        <button type="button" class="quick-tile active-tile quick-manual" data-open-dialog="movement-dialog">
+          <span class="quick-icon" aria-hidden="true">+</span>
+          <span><strong data-i18n="dashboard.manualEntry">{t('dashboard.manualEntry')}</strong><small data-i18n={isPro ? 'dashboard.manualBusiness' : 'dashboard.manualPersonal'}>{t(isPro ? 'dashboard.manualBusiness' : 'dashboard.manualPersonal')}</small></span>
+        </button>
+        <div class="dashboard-quick-chips" aria-label={t('registro.quickTemplates')} data-i18n-aria-label="registro.quickTemplates">
+          {quickTemplates.map((tpl) => (
+            <button
+              type="button"
+              class:list={['template-chip', { 'template-income': tpl.kind === 'ingreso' }]}
+              data-quick-template
+              data-tpl-kind={tpl.kind}
+              data-tpl-concept={tpl.concept}
+              data-tpl-category={tpl.category}
+              data-i18n={tpl.labelKey}
+            >
+              {t(tpl.labelKey)}
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+  <MovementDialog userId={user.id} {account} {returnTo} />
+  {!hidden && <dialog class="finance-dialog" id="limit-dialog" aria-labelledby="limit-title">
+    <header class="dialog-heading"><div><h2 id="limit-title" data-i18n="dashboard.adjustDailyLimit">{t('dashboard.adjustDailyLimit')}</h2><p data-i18n={limitDescriptionKey}>{t(limitDescriptionKey)}</p></div><button class="dialog-x" type="button" aria-label={t('common.close')} data-i18n-aria-label="common.close" data-close-dialog>×</button></header>
+    <form action="/api/preferencias" method="post" data-mutation>
+      <input type="hidden" name="action" value="limit" /><input type="hidden" name="account" value={account} /><input type="hidden" name="returnTo" value={returnTo} />
+      <label class="finance-field"><span data-i18n="dashboard.dailyLimitSoles">{t('dashboard.dailyLimitSoles')}</span><input name="amount" inputmode="decimal" value={(data.limit / 100).toFixed(2)} maxlength="10" pattern="[0-9]{1,7}([.,][0-9]{1,2})?" required /></label>
+      <p class="finance-error" data-form-error role="alert" hidden></p>
+      <footer class="dialog-actions"><button type="button" class="finance-pill" data-close-dialog data-i18n="common.cancel">{t('common.cancel')}</button><button type="submit" class="primary-button" data-i18n="dashboard.saveLimit">{t('dashboard.saveLimit')}</button></footer>
+    </form>
+  </dialog>}
+</FinanceLayout>

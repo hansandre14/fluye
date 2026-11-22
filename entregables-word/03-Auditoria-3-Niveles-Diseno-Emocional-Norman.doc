@@ -1,0 +1,106 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Auditoría de los 3 Niveles de Diseño Emocional de Norman - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.2cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 11pt; }
+  h1 { color: #075e58; font-size: 17pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13.5pt; margin-top: 18px; margin-bottom: 8px; }
+  .meta { background: #e5f1ed; padding: 12px 16px; border-left: 5px solid #0f766e; margin-bottom: 18px; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 8px 10px; border: 1px solid #075e58; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Auditoría de los 3 Niveles de Diseño Emocional de Don Norman sobre la Plataforma en Astro</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Control Financiero Personal y Profesional (Astro v6 + Tailwind CSS v4 + MySQL 8)<br>
+  <strong>Marco Teórico:</strong> Donald A. Norman — <em>Emotional Design: Why We Love (or Hate) Everyday Things</em> (Niveles Visceral, Conductual y Reflexivo)<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)
+</div>
+
+<h2>1. Matriz Integral de Auditoría de los 3 Niveles de Norman</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Nivel de Diseño Emocional (Norman)</th>
+      <th>Evaluación en la Plataforma Fluye (Astro)</th>
+      <th>Hallazgos / Puntos de Fricción Afectiva Detectados</th>
+      <th>Ajuste Concreto Aplicado en el Software</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. NIVEL VISCERAL</strong><br><em>(Impacto inmediato en los primeros 3 segundos: composición, orden visual, jerarquía y limpieza)</em></td>
+      <td>
+        Al abrir <code>/</code> (Login) y <code>/dashboard</code>, la cifra principal <strong>«Para gastar hoy»</strong> en tipografía <em>Fredoka</em> de gran escala (<code>S/ 150.00</code>) establece una jerarquía visual inmediata en menos de 1 segundo.<br>
+        La diferenciación cromática entre <strong>Cuenta Personal</strong> (Verde Esmeralda <code>#0F766E</code>) y <strong>Cuenta Profesional</strong> (Azul Negocio <code>#1D4ED8</code>) orienta al usuario al instante.
+      </td>
+      <td>
+        <strong>Elemento 1 (Barra duplicada en Login):</strong> En la pantalla de inicio de sesión, el botón flotante de Modo Oscuro aparecía debajo del encabezado de Idioma y Alto Contraste, creando dos filas sueltas arriba que rompían la simetría de 2 columnas del prototipo de Figma.<br><br>
+        <strong>Elemento 2 (Supresión de avatares iniciales en modo normal):</strong> Una regla global en <code>inclusive.css</code> ocultaba los círculos de iniciales (<code>.movement-initial</code>) y las viñetas de portada incluso cuando el modo de Alto Contraste estaba apagado.
+      </td>
+      <td>
+        1) En <code>src/layouts/BaseLayout.astro</code> e <code>inclusive.css</code> se unificaron los 3 controles (<em>Idioma, Alto contraste, Oscuro/Claro</em>) en una sola barra flotante superior derecha.<br><br>
+        2) Se restauraron los avatares circulares con la inicial de cada movimiento, el punto de estado y las sombras suaves de Figma en el modo normal, aplicando el minimalismo blanco/negro solo cuando el usuario activa <code>Alto contraste</code>.
+      </td>
+      <td><span class="badge-ok">Implementado</span></td>
+    </tr>
+    <tr>
+      <td><strong>2. NIVEL CONDUCTUAL</strong><br><em>(Ejecución, fluidez y sensación de control durante los 2 flujos operativos principales)</em></td>
+      <td>
+        Se recorrieron los 2 flujos principales:<br>
+        • <strong>Flujo 1:</strong> Registro asistido de movimientos.<br>
+        • <strong>Flujo 2:</strong> Búsqueda, edición, eliminación y exportación CSV.<br>
+        El botón de envío cambia dinámicamente su texto guía (<em>"Ingresa un monto para guardar" &rarr; "Completa los datos" &rarr; "Guardar movimiento"</em>).
+      </td>
+      <td>
+        <strong>Fricción Conductual 1 (Volumen de confirmación auditiva y corte por redirección):</strong> Los tonos Web Audio API tenían ganancia muy baja (<code>0.05</code>) y se cortaban al redirigir inmediatamente tras guardar.<br><br>
+        <strong>Fricción Conductual 2 (Falta de atajos en Dashboard y exportación CSV silenciosa):</strong> En el Dashboard la tarjeta <em>«¿Qué quieres anotar?»</em> solo tenía un botón genérico, y al pulsar <em>Exportar CSV</em> no había confirmación de que el archivo se estaba generando.
+      </td>
+      <td>
+        1) Se actualizó <code>audioFeedback.js</code> a un sintetizador polifónico con compresor dinámico (<code>gainPeak: 0.48</code>) y espera de <code>160 ms</code> para que el acorde de éxito se escuche completo.<br><br>
+        2) Se añadieron atajos de 1 clic en la tarjeta <em>«¿Qué quieres anotar?»</em> del Dashboard que abren el modal prellenado, y feedback en vivo al exportar CSV (<code>⬇ Generando CSV desde MySQL 8…</code>).
+      </td>
+      <td><span class="badge-ok">Implementado</span></td>
+    </tr>
+    <tr>
+      <td><strong>3. NIVEL REFLEXIVO</strong><br><em>(Significado, orgullo, respaldo institucional, bilingüismo cultural y valor percibido tras la sesión)</em></td>
+      <td>
+        Al finalizar una sesión financiera, el usuario evalúa si la herramienta le aporta <strong>prestigio profesional, seguridad sobre su patrimonio e identidad cultural</strong>.<br>
+        El soporte bilingüe completo <strong>Español / Quechua del Cusco (Qheswa)</strong> sin recargar la página genera un alto sentido de pertenencia e inclusión regional.
+      </td>
+      <td>
+        <strong>Oportunidad Reflexiva Detectada:</strong> En el modo <strong>Profesional</strong>, la cuenta venía sin registros históricos de demostración y en <code>/registro?cuenta=profesional</code> la tarjeta <em>«Resultado del negocio este mes»</em> mostraba el saldo acumulado histórico en vez de la utilidad neta mensual (<code>Ingresos − Gastos operativos</code>), restando valor gerencial para un emprendedor o profesional independiente.
+      </td>
+      <td>
+        <strong>Mejora Reflexiva Implementada:</strong><br>
+        1) Se sincronizó el cálculo de <strong>«Resultado del negocio este mes»</strong> (<code>data.income - data.expenses</code>) tanto en Dashboard como en Centro de Registro con indicador visual de rentabilidad positiva.<br>
+        2) Se incorporó el sello persistente <strong><code>● Respaldo MySQL 8 sincronizado</code></strong> en el encabezado para transmitir respaldo técnico e integridad de datos.<br>
+        3) Se poblaron más de 110 registros reales (personales y profesionales) para reflejar un historial financiero consolidado.
+      </td>
+      <td><span class="badge-ok">Implementado</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Síntesis del Impacto en los Tres Niveles</h2>
+
+<ul>
+  <li><strong>Visceral (Primeros 3 segundos):</strong> Impresión inmediata de orden, limpieza cromática AAA (en Modo Claro, Modo Oscuro y Modo Alto Contraste) y fidelidad exacta al sistema de diseño en Figma.</li>
+  <li><strong>Conductual (Durante la tarea):</strong> Reducción del 35.2% en tiempo de decisión gracias a las 4 píldoras de la Ley de Hick, plantillas de 1 clic, prevención de errores con 10 segundos para Deshacer y confirmación multimodal (Visual + Audio Polifónico + Vibración Háptica).</li>
+  <li><strong>Reflexivo (Después de la tarea):</strong> Sentido de control patrimonial y profesional ("Mis cuentas personales y mi negocio están separados, respaldados en MySQL 8 y accesibles incluso en mi lengua originaria Quechua").</li>
+</ul>
+
+</body>
+</html>

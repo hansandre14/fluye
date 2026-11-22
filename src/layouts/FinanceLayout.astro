@@ -1,0 +1,76 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ContrastToggle from '../components/ContrastToggle.astro';
+import '../styles/finance.css';
+import { ACCOUNTS } from '../lib/finance.js';
+import LanguageSelector from '../components/LanguageSelector.astro';
+import { getLocale, createTranslator } from '../i18n/index.js';
+import { formatRegionalNow } from '../i18n/format.js';
+const { title, subtitle, titleKey, titleParams = {}, subtitleKey, subtitleParams = {}, user, account, hidden, page, returnTo } = Astro.props;
+const locale = getLocale(Astro);
+const t = createTranslator(locale);
+const initials = user.name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
+const accountQuery = '?cuenta=' + account;
+const isPro = account === 'profesional';
+---
+<BaseLayout title={title + ' | Fluye'} finance>
+  <div class="finance-shell" data-account-theme={account}>
+    <header class="finance-header">
+      <div class="finance-heading">
+        <span class="account-badge" data-account-badge={account}>
+          <span class="account-badge-dot" aria-hidden="true"></span>
+          <span data-i18n={isPro ? 'layout.professionalBadge' : 'layout.personalBadge'}>{t(isPro ? 'layout.professionalBadge' : 'layout.personalBadge')}</span>
+        </span>
+        <h1 data-i18n={titleKey} data-i18n-params={JSON.stringify(titleParams)}>{titleKey ? t(titleKey, titleParams) : title}</h1>
+        <p data-i18n={subtitleKey} data-i18n-params={JSON.stringify(subtitleParams)}>{subtitleKey ? t(subtitleKey, subtitleParams) : subtitle}</p>
+        <div class="regional-info"><span data-i18n="language.region">{t('language.region')}</span><time data-regional-clock>{formatRegionalNow()}</time></div>
+      </div>
+      <div class="finance-controls">
+        <LanguageSelector id="finance-language" /><ContrastToggle />
+        <button
+          type="button"
+          class="finance-pill theme-toggle-pill"
+          data-theme-toggle
+          aria-pressed="false"
+          aria-label={t('layout.themeLabel')} data-i18n-aria-label="layout.themeLabel"
+          title={t('layout.themeTitle')} data-i18n-title="layout.themeTitle"
+        >
+          <span data-theme-icon aria-hidden="true">🌙</span>
+          <span data-theme-label data-i18n="layout.dark">{t('layout.dark')}</span>
+        </button>
+        <button
+          type="button"
+          class="finance-pill audio-toggle-pill"
+          data-audio-toggle
+          aria-pressed="true"
+          aria-label={t('layout.audioLabel')} data-i18n-aria-label="layout.audioLabel"
+          title={t('layout.audioTitle')} data-i18n-title="layout.audioTitle"
+        >
+          <span data-audio-icon aria-hidden="true">🔊</span>
+          <span data-audio-label data-i18n="layout.sound">{t('layout.sound')}</span>
+        </button>
+        <form method="post" action="/api/preferencias">
+          <input type="hidden" name="action" value="privacy" />
+          <input type="hidden" name="hidden" value={hidden ? '0' : '1'} />
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <button class="finance-pill privacy-toggle" type="submit" aria-pressed={String(hidden)}>
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.6"/>{hidden && <path d="m4 4 16 16"/>}</svg>
+            <span data-i18n={hidden ? 'layout.showAmounts' : 'layout.hideAmounts'}>{t(hidden ? 'layout.showAmounts' : 'layout.hideAmounts')}</span>
+          </button>
+        </form>
+        <nav class="account-switch" aria-label={t('layout.accountType')} data-i18n-aria-label="layout.accountType">
+          {Object.entries(ACCOUNTS).map(([key, label]) => <a href={page + '?cuenta=' + key} aria-current={key === account ? 'page' : undefined}><span data-i18n={'accounts.' + key}>{t('accounts.' + key)}</span></a>)}
+        </nav>
+        <span class="finance-avatar" title={user.name} aria-label={user.name}>{initials}</span>
+      </div>
+    </header>
+    <main id="finance-main" tabindex="-1"><slot /></main>
+    <nav class="finance-nav" aria-label={t('layout.navigation')} data-i18n-aria-label="layout.navigation">
+      <a href={'/dashboard' + accountQuery} aria-current={page === '/dashboard' ? 'page' : undefined}><span data-i18n="layout.home">{t('layout.home')}</span></a>
+      <a href={'/registro' + accountQuery} aria-current={page === '/registro' ? 'page' : undefined}><span data-i18n="layout.register">{t('layout.register')}</span></a>
+      <a href={'/movimientos' + accountQuery} aria-current={page === '/movimientos' ? 'page' : undefined}><span data-i18n="layout.movements">{t('layout.movements')}</span></a>
+      <form action="/api/auth/logout" method="post"><button type="submit"><span data-i18n="layout.logout">{t('layout.logout')}</span></button></form>
+    </nav>
+  </div>
+  <script>import '../scripts/finance.js';</script>
+</BaseLayout>

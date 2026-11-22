@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+
+const isSimulation = Astro.url.searchParams.get('simulacion') === '1';
+if (!isSimulation) {
+  Astro.response.status = 500;
+}
+Astro.response.headers.set('Cache-Control', 'no-store');
+const { error } = Astro.props;
+const safeReason = error instanceof Error
+  ? 'Detectamos una interrupción temporal al procesar la operación en el servidor.'
+  : 'El servicio tardó más de lo previsto en responder o encontró una excepción temporal.';
+---
+<BaseLayout title="500 · Recuperación del sistema | Fluye">
+  <main id="main-content" tabindex="-1" class="session-page recovery-error-page">
+    <section class="session-card error-recovery-card error-500-card" aria-labelledby="error-500-title">
+      <div class="error-recovery-top">
+        <Brand />
+        <span class="error-code-badge error-code-500" aria-label="Código de estado 500">500 · Pausa del servidor</span>
+      </div>
+
+      <h1 id="error-500-title">Tuvimos un inconveniente temporal en el servidor.</h1>
+      <p class="error-recovery-lead">
+        {safeReason} Hemos evitado cualquier escritura incompleta para proteger la exactitud de tus cuentas.
+      </p>
+
+      <div class="error-recovery-diagnostics error-diagnostics-warn" role="alert">
+        <strong>🛡️ Protección transaccional activa:</strong> Ningún monto fue duplicado ni alterado. Puedes reintentar la conexión o volver al panel seguro.
+      </div>
+
+      <div class="error-recovery-actions" role="group" aria-label="Acciones de recuperación ante fallo de servidor">
+        <button type="button" class="primary-button error-action-primary" onclick="window.location.reload()">
+          ↻ Reintentar operación ahora
+        </button>
+        <div class="error-secondary-grid">
+          <a class="finance-pill error-action-pill" href="/dashboard">Regresar al Dashboard seguro</a>
+          <a class="finance-pill error-action-pill" href="/movimientos">Revisar mi historial</a>
+          <a class="finance-pill error-action-pill" href="/api/health" target="_blank" rel="noopener">Verificar estado MySQL (/api/health)</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

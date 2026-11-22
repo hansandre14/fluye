@@ -1,0 +1,197 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Paleta Emocional y Lineamientos de Animación - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.2cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 11pt; }
+  h1 { color: #075e58; font-size: 17pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13.5pt; margin-top: 18px; margin-bottom: 8px; }
+  h3 { color: #1e40af; font-size: 11.5pt; margin-top: 14px; margin-bottom: 6px; }
+  .meta { background: #e5f1ed; padding: 12px 16px; border-left: 5px solid #0f766e; margin-bottom: 18px; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 8px 10px; border: 1px solid #075e58; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .swatch { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-family: Consolas, monospace; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Definición de la "Paleta Emocional" y Lineamientos de Animación para Confianza, Velocidad y Seguridad</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 + Tailwind CSS v4 + MySQL 8)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)<br>
+  <strong>Objetivos Emocionales Seleccionados:</strong> 1) Confianza Financiera · 2) Seguridad Operativa · 3) Velocidad y Claridad
+</div>
+
+<h2>1. Definición de la "Paleta Emocional" del Sistema Fluye</h2>
+
+<p>En una aplicación de gestión del dinero diario y contabilidad de pequeños negocios, el usuario experimenta vulnerabilidad al registrar gastos o eliminar operaciones. Por ello, <strong>Fluye</strong> establece tres objetivos emocionales prioritarios respaldados por decisiones cuantificables de color (WCAG 2.1 AAA), superficie, tipografía y tono verbal:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Objetivo Emocional</th>
+      <th>Decisiones de Color y Superficie (Tokens CSS)</th>
+      <th>Tipografía y Jerarquía Visual</th>
+      <th>Tono de Mensajes (Micro-copy)</th>
+      <th>Emoción Contraria que Evita</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Confianza y Calma Financiera</strong><br>(Cuenta Personal y Profesional)</td>
+      <td>
+        • <strong>Verde Esmeralda Profundo</strong> (<code>#0F766E</code> / <code>#075E58</code> sobre menta suave <code>#E5F1ED</code>, ratio <strong>12.74:1 AAA</strong>): evoca solvencia, estabilidad bancaria y crecimiento.<br>
+        • <strong>Azul Corporativo Profesional</strong> (<code>#1D4ED8</code> sobre <code>#DBEAFE</code>): diferencia inmediatamente la cuenta de negocio de la alcancía personal.<br>
+        • <strong>Superficie Marfil Cálida</strong> (<code>#F4F4F0</code> en Claro) y <strong>Pizarra Profunda</strong> (<code>#0B1117</code> / <code>#15202B</code> en Oscuro con acento <code>#5EEAD4</code>, ratio <strong>9.92:1 AAA</strong>).
+      </td>
+      <td>
+        • <strong>Fredoka Variable</strong> (650–680) para cifras monetarias (<code>S/ 122.00</code>) y encabezados: trazos redondeados y abiertos que reducen la ansiedad matemática.<br>
+        • <strong>Nunito Variable</strong> (500–800) para tablas, etiquetas y ayudas: alta legibilidad en cuerpos pequeños (12–14 px).
+      </td>
+      <td>
+        Cercano, transparente y sin jerga contable intimidante: <em>"Así va tu alcancía personal hoy"</em> (Personal) vs. <em>"Resultado del negocio este mes"</em> (Profesional).
+      </td>
+      <td>Evita el <strong>estrés financiero, la fatiga visual y la confusión entre dinero personal y del negocio</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>2. Seguridad y Control ante Errores</strong><br>(Acciones críticas y privacidad)</td>
+      <td>
+        • <strong>Carmesí de Alta Visibilidad AAA</strong> (<code>#850B19</code> con texto blanco <code>#FFFFFF</code>, ratio <strong>10.20:1 AAA</strong>) en <code>DeleteButton.astro</code>.<br>
+        • <strong>Ámbar de Reversibilidad</strong> (<code>#FBBF24</code> sobre <code>#172126</code>) en la barra de cuenta regresiva de 10 segundos para <em>Deshacer</em>.
+      </td>
+      <td>
+        Números tabulares (<code>font-variant-numeric: tabular-nums</code>) en el reloj regional de Lima y en el contador regresivo de <code>10s</code> para evitar saltos horizontales.
+      </td>
+      <td>
+        Preventivo y tranquilizador: <em>"¿Quieres eliminar Almuerzo? Tendrás 10 segundos para deshacerlo."</em> Nunca culpa al usuario.
+      </td>
+      <td>Evita el <strong>pánico por pérdida irreversible de datos</strong> y la incertidumbre de no saber si un dato se guardó en MySQL.</td>
+    </tr>
+    <tr>
+      <td><strong>3. Velocidad y Claridad Operativa</strong><br>(Registro en menos de 5 segundos)</td>
+      <td>
+        • Píldoras de sugerencia rápida (Ley de Hick) en <code>#E5F1ED</code> con estado activo sólido <code>var(--primary)</code> y contraste inmediato.<br>
+        • Bordes definidos (<code>#BFC5BF</code> en claro / <code>#64748B</code> en oscuro, ratio &ge; 3.08:1 AA).
+      </td>
+      <td>
+        Campo de monto destacado a <code>24px</code> con prefijo monetario fijo <code>S/</code> y foco automático (<code>autofocus</code>).
+      </td>
+      <td>
+        Directo y orientado a la acción en el botón primario: <em>"Ingresa un monto para guardar" &rarr; "Guardar movimiento"</em>.
+      </td>
+      <td>Evita la <strong>lentitud, la parálisis por exceso de opciones y la ambigüedad</strong>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Especificación de Principios de Animación por Objetivo Emocional</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Objetivo Emocional</th>
+      <th>Regla de Comportamiento Visual y Duración</th>
+      <th>Curva de Aceleración y Direccionalidad</th>
+      <th>Implementación Técnica en Astro (<code>global.css</code> / <code>finance.css</code>)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Velocidad</strong><br>(Selección de plantillas, píldoras Ley de Hick y filtros)</td>
+      <td>
+        <strong>Rápida y ágil (120 ms – 160 ms)</strong>.<br>
+        Sin esperas artificiales. La respuesta táctil y visual ocurre en el mismo cuadro de ejecución que el clic.
+      </td>
+      <td>
+        Curva <code>--ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1)</code>.<br>
+        Micro-elevación vertical de <code>translateY(-1px)</code> en hover y pulso de confirmación <code>scale(0.94) &rarr; scale(1.03) &rarr; scale(1)</code> al seleccionar.
+      </td>
+      <td>
+        Variable <code>--motion-fast: 140ms</code> aplicada en <code>.hick-chip</code>, <code>.template-chip</code> y <code>.filter-popover[open] &gt; div</code> (animación <code>popoverSettle 160ms</code>).
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Seguridad</strong><br>(Confirmación de borrado, diálogos y ventana Deshacer de 10 s)</td>
+      <td>
+        <strong>Contenida, firme y predecible (180 ms – 220 ms)</strong>.<br>
+        Sin rebotes elásticos exagerados. La barra de 10 segundos decrece linealmente (<code>linear</code>) para reflejar tiempo real exacto.
+      </td>
+      <td>
+        Entrada de modales desde abajo hacia el centro (<code>translateY(8px) scale(0.975) &rarr; translateY(0) scale(1)</code>) con desaceleración suave.<br>
+        En errores de validación: sacudida horizontal contenida de <code>&plusmn;5px</code> (<code>fieldErrorShake 220ms</code>).
+      </td>
+      <td>
+        Variable <code>--motion-medium: 210ms</code> en <code>dialog[open]</code> (<code>dialogSettle</code>), <code>.finance-notice</code> (<code>toastSlideUp 220ms</code>) y <code>DeleteButton.astro</code> (<code>sensory-press 180ms</code>).
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Confianza e Inclusión</strong><br>(Respeto al Sistema Operativo)</td>
+      <td>
+        <strong>Instantánea (0.01 ms) cuando el usuario solicita movimiento reducido</strong>.
+      </td>
+      <td>
+        Desactivación automática de desplazamientos y giros bajo <code>@media (prefers-reduced-motion: reduce)</code>, manteniendo los cambios de color, foco e íconos.
+      </td>
+      <td>
+        Regla global en <code>src/styles/inclusive.css</code> y <code>src/components/DeleteButton.astro</code> (Cumplimiento WCAG 2.1 Criterio 2.3.3 AAA).
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Auditoría de la Plataforma en Astro y Lista de Ajustes Aplicados</h2>
+
+<p>Se auditó la interfaz en Astro recorriendo los flujos de Login, Dashboard, Centro de Registro y Movimientos. Se detectaron y corrigieron los siguientes puntos para alinearlos al 100% con la Paleta Emocional:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Hallazgo Detectado en la Auditoría Previa</th>
+      <th>Impacto Emocional Negativo</th>
+      <th>Ajuste Concreto Aplicado en el Código de Astro</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td>Los diálogos modales (<code>#movement-dialog</code>, <code>#delete-dialog</code>) y los popovers de filtros (<code>.filter-popover</code>) aparecían de golpe en <code>0 ms</code> sin transición espacial.</td>
+      <td>Brusquedad visual; el usuario perdía la referencia de qué elemento disparó la ventana.</td>
+      <td>Se implementaron las animaciones <code>dialogSettle</code> (<code>210ms cubic-bezier(0.22, 1, 0.36, 1)</code>) en <code>src/styles/global.css</code> y <code>popoverSettle</code> (<code>160ms</code>) en <code>src/styles/finance.css</code>.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td>Al guardar un movimiento en <code>finance.js</code>, la redirección <code>window.location.assign()</code> ocurría en el mismo milisegundo que el sonido de éxito, cortando el acorde auditivo.</td>
+      <td>Sensación de corte abrupto e incertidumbre conductual sobre si la confirmación concluyó.</td>
+      <td>Se añadió una ventana de asentamiento de <code>160 ms</code> tras <code>triggerSignature('exito')</code> y actualización del badge <code>✓ Guardado en MySQL 8</code> antes de navegar.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td>En Modo Oscuro inicial, algunos textos secundarios y bordes de tablas perdían contraste frente al fondo oscuro.</td>
+      <td>Desconfianza visual y fatiga ocular al consultar el historial nocturno.</td>
+      <td>Se estandarizaron los tokens oscuros con luminancia relativa AAA: texto <code>#F8FAFC</code> sobre <code>#15202B</code> (15.8:1) y acento menta <code>#5EEAD4</code> (9.92:1 AAA).</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td>Las reglas de <code>inclusive.css</code> ocultaban las iniciales circulares de los movimientos (<code>.movement-initial</code>) incluso en modo normal.</td>
+      <td>Pérdida de identidad visual y calidez respecto al prototipo aprobado en Figma.</td>
+      <td>Se encapsuló la supresión de ornamentos estrictamente bajo <code>html[data-contrast="high"]</code>, preservando la estética de Figma en modo normal.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+---
+import '@fontsource-variable/fredoka';
+import '@fontsource-variable/nunito';
+import '../styles/global.css';
+import '../styles/inclusive.css';
+import ContrastToggle from '../components/ContrastToggle.astro';
+import LanguageSelector from '../components/LanguageSelector.astro';
+import { getLocale, createTranslator } from '../i18n/index.js';
+const { title, titleKey, titleParams = {}, finance = false } = Astro.props;
+const locale = getLocale(Astro);
+const t = createTranslator(locale);
+---
+<!doctype html>
+<html lang={locale + '-PE'} data-locale={locale} data-theme="light">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" /><meta name="theme-color" content="#0f766e" />
+    <title data-i18n={titleKey} data-i18n-params={JSON.stringify(titleParams)}>{titleKey ? t(titleKey, titleParams) : title}</title>
+    <script is:inline>
+      (() => {
+        try {
+          const savedTheme = localStorage.getItem('fluye_theme');
+          const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : (prefersDark ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.dataset.contrast = localStorage.getItem('fluye_contrast') === 'high' ? 'high' : 'normal';
+          const muted = localStorage.getItem('fluye_mute_audio') === '1';
+          document.documentElement.dataset.audioMuted = String(muted);
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body class="bg-surface text-ink antialiased">
+    <a class="skip-link" href={finance ? "#finance-main" : "#main-content"} data-i18n="accessibility.skip">{t("accessibility.skip")}</a>
+    {!finance && (
+      <header class="public-language-header" aria-label={t('accessibility.preferences')} data-i18n-aria-label="accessibility.preferences">
+        <LanguageSelector id="public-language" />
+        <ContrastToggle />
+        <button
+          type="button"
+          class="global-theme-fab"
+          data-theme-toggle
+          aria-label={t('layout.themeLabel')} data-i18n-aria-label="layout.themeLabel"
+          title={t('layout.themeTitle')} data-i18n-title="layout.themeTitle"
+        >
+          <span data-theme-icon aria-hidden="true">🌙</span>
+          <span data-theme-label data-i18n="layout.dark">{t('layout.dark')}</span>
+        </button>
+      </header>
+    )}
+    <span class="visually-hidden" role="status" aria-live="polite" data-language-status></span>
+    <div class="offline-recovery-banner" data-offline-banner role="alert" aria-live="assertive" hidden>
+      <div class="offline-banner-inner">
+        <span class="offline-badge" data-offline-badge>📡 Sin conexión a red</span>
+        <p class="offline-copy" data-offline-copy>
+          Perdiste la conexión a internet. Resguardamos en este navegador los datos que estabas escribiendo para que no pierdas tu contexto.
+        </p>
+        <div class="offline-actions">
+          <button type="button" class="finance-pill offline-retry-btn" data-offline-retry>↻ Comprobar red y reintentar</button>
+          <button type="button" class="offline-dismiss-btn" data-offline-close aria-label="Ocultar aviso de red">×</button>
+        </div>
+      </div>
+    </div>
+    <slot />
+    <script>
+      import { setText } from '../i18n/client.js';
+      import { triggerSignature } from '../lib/feedback/audioFeedback.js';
+      import '../scripts/inclusive.js';
+      (() => {
+        function syncThemeButtons() {
+          const isDark = document.documentElement.dataset.theme === 'dark';
+          for (const btn of document.querySelectorAll('[data-theme-toggle]')) {
+            btn.setAttribute('aria-pressed', String(isDark));
+            const icon = btn.querySelector('[data-theme-icon]');
+            const label = btn.querySelector('[data-theme-label]');
+            if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+            if (label) setText(label, isDark ? 'layout.light' : 'layout.dark');
+          }
+          const isMuted = document.documentElement.dataset.audioMuted === 'true';
+          for (const btn of document.querySelectorAll('[data-audio-toggle]')) {
+            btn.setAttribute('aria-pressed', String(!isMuted));
+            const icon = btn.querySelector('[data-audio-icon]');
+            const label = btn.querySelector('[data-audio-label]');
+            if (icon) icon.textContent = isMuted ? '🔇' : '🔊';
+            if (label) setText(label, isMuted ? 'layout.muted' : 'layout.sound');
+          }
+        }
+        document.addEventListener('click', (event) => {
+          const themeBtn = event.target.closest?.('[data-theme-toggle]');
+          if (themeBtn) {
+            const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.dataset.theme = next;
+            try { localStorage.setItem('fluye_theme', next); } catch {}
+            syncThemeButtons();
+            return;
+          }
+          const audioBtn = event.target.closest?.('[data-audio-toggle]');
+          if (audioBtn) {
+            const nextMuted = document.documentElement.dataset.audioMuted !== 'true';
+            document.documentElement.dataset.audioMuted = String(nextMuted);
+            try { localStorage.setItem('fluye_mute_audio', nextMuted ? '1' : '0'); } catch {}
+            syncThemeButtons();
+            if (!nextMuted) {
+              triggerSignature('progreso', { forceAudio: true, enableAudio: true, enableHaptic: true });
+            }
+          }
+        });
+        document.addEventListener('fluye:languagechange', syncThemeButtons);
+        syncThemeButtons();
+
+        // Actividad: Recuperación guiada Sin Red (Offline / Online)
+        const offlineBanner = document.querySelector('[data-offline-banner]');
+        const offlineBadge = document.querySelector('[data-offline-badge]');
+        const offlineCopy = document.querySelector('[data-offline-copy]');
+        const offlineRetry = document.querySelector('[data-offline-retry]');
+        const offlineClose = document.querySelector('[data-offline-close]');
+
+        function setOfflineState(isOffline, simulated = false) {
+          if (!offlineBanner) return;
+          if (isOffline) {
+            offlineBanner.hidden = false;
+            offlineBanner.classList.remove('is-online-recovered');
+            document.documentElement.dataset.networkState = 'offline';
+            if (offlineBadge) offlineBadge.textContent = simulated ? '📡 Modo Sin Red (Simulación activa)' : '📡 Sin conexión a red';
+            if (offlineCopy) {
+              offlineCopy.textContent = 'Perdiste la conexión. Tus datos en pantalla están resguardados localmente para evitar pérdida de contexto. Restablece la red y pulsa Reintentar.';
+            }
+            triggerSignature('error', { enableAudio: true, enableHaptic: true });
+          } else {
+            document.documentElement.dataset.networkState = 'online';
+            if (!offlineBanner.hidden) {
+              offlineBanner.classList.add('is-online-recovered');
+              if (offlineBadge) offlineBadge.textContent = '✓ Conexión restablecida';
+              if (offlineCopy) {
+                offlineCopy.textContent = 'La red volvió a estar disponible. Tu contexto sigue intacto y ya puedes guardar o continuar tu operación.';
+              }
+              triggerSignature('exito', { enableAudio: true, enableHaptic: true });
+              window.setTimeout(() => {
+                if (document.documentElement.dataset.networkState === 'online') {
+                  offlineBanner.hidden = true;
+                }
+              }, 4200);
+            }
+          }
+        }
+
+        window.addEventListener('offline', () => setOfflineState(true, false));
+        window.addEventListener('online', () => setOfflineState(false, false));
+        window.addEventListener('fluye:simulate-offline', () => setOfflineState(true, true));
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          setOfflineState(true, false);
+        }
+        offlineRetry?.addEventListener('click', async () => {
+          try {
+            const res = await fetch('/api/health', { cache: 'no-store', signal: AbortSignal.timeout(3500) });
+            if (res.ok) {
+              setOfflineState(false, false);
+              const pendingForm = document.querySelector('[data-movement-form][data-pending-retry="true"]');
+              if (pendingForm instanceof HTMLFormElement) {
+                pendingForm.removeAttribute('data-pending-retry');
+                pendingForm.requestSubmit();
+              }
+            } else {
+              setOfflineState(true, false);
+            }
+          } catch {
+            setOfflineState(true, false);
+          }
+        });
+        offlineClose?.addEventListener('click', () => {
+          if (offlineBanner) offlineBanner.hidden = true;
+        });
+      })();
+    </script>
+  </body>
+</html>

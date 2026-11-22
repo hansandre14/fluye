@@ -1,0 +1,154 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Microinteracciones y Micro-copywriting Humanizado - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.2cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 11pt; }
+  h1 { color: #075e58; font-size: 17pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13.5pt; margin-top: 18px; margin-bottom: 8px; }
+  .meta { background: #e5f1ed; padding: 12px 16px; border-left: 5px solid #0f766e; margin-bottom: 18px; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 8px 10px; border: 1px solid #075e58; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .old-copy { color: #991b1b; text-decoration: line-through; }
+  .new-copy { color: #065f46; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Implementación de Microinteracciones y Micro-copywriting Humanizado para Excepciones en Astro</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 + Tailwind CSS v4 + MySQL 8)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)
+</div>
+
+<h2>1. Microinteracciones Implementadas en la Plataforma (Alineadas con la Motion Spec)</h2>
+
+<p>Se implementaron <strong>4 microinteracciones funcionales y visibles</strong> en Astro que comunican con claridad qué ocurrió en cada acción sin entorpecer el flujo del usuario:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Microinteracción</th>
+      <th>Ubicación en el Código de Astro</th>
+      <th>Comportamiento Visual, Auditivo y Motion Spec</th>
+      <th>Propósito Comunicativo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Pulso Táctil al Seleccionar Píldoras de Ley de Hick y Plantillas Rápidas</strong></td>
+      <td><code>src/scripts/finance.js</code><br><code>src/styles/finance.css</code><br>(<code>@keyframes chipConfirmPulse</code>)</td>
+      <td>
+        Al hacer clic en una categoría sugerida (<code>[data-hick-category]</code>) o plantilla (<code>[data-quick-template]</code>), el chip ejecuta un pulso <code>scale(1) &rarr; scale(0.94) &rarr; scale(1.03) &rarr; scale(1)</code> en <strong>180 ms</strong> con curva <code>cubic-bezier(0.22, 1, 0.36, 1)</code>, activa el tono <code>progreso</code> (200 ms) y traslada el foco al campo <em>Monto</em>.
+      </td>
+      <td>Confirmar instantáneamente que la categoría y el concepto fueron autocompletados y guiar al siguiente paso.</td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Validación en Vivo con Check de Confirmación (✓) y Sacudida Contenida ante Error</strong></td>
+      <td><code>src/scripts/login.js</code><br><code>src/scripts/finance.js</code><br><code>src/styles/global.css</code><br>(<code>@keyframes fieldErrorShake</code>)</td>
+      <td>
+        • Al ingresar un correo válido en Login, aparece el indicador verde <code>✓</code> (<code>#email-check</code>) y el borde cambia a esmeralda.<br>
+        • Si un campo falla o el servidor devuelve una excepción, el mensaje/campo ejecuta <code>fieldErrorShake</code> (desplazamiento horizontal <code>&plusmn;5px</code> en <strong>220 ms</strong>), aplica <code>aria-invalid="true"</code> y dirige el foco (<code>.focus()</code>) al campo exacto.
+      </td>
+      <td>Guiar la mirada y el teclado directamente al campo que requiere corrección sin frustrar al usuario.</td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Actualización Dinámica del Contador de Búsqueda en Vivo</strong></td>
+      <td><code>src/pages/movimientos.astro</code><br><code>src/scripts/finance.js</code><br>(<code>[data-live-search]</code>)</td>
+      <td>
+        Al escribir en el buscador de <em>Movimientos</em>, las filas se filtran en tiempo real sin recargar y la etiqueta <code>Mostrando X coincidencias para "..."</code> ejecuta el pulso visual <code>data-micro-pulse="true"</code> (180 ms).
+      </td>
+      <td>Hacer evidente cuántas filas coincidieron con el término buscado en esa página.</td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td><strong>Compresión Física Multimodal y Cuenta Regresiva de 10 s al Eliminar</strong></td>
+      <td><code>src/components/DeleteButton.astro</code><br><code>src/components/FinanceNotice.astro</code></td>
+      <td>
+        Al confirmar un borrado, el botón ejecuta <code>sensory-press</code> (180 ms), emite el earcon descendente (660&rarr;440 Hz) + vibración <code>[50, 30, 50] ms</code> y despliega el banner inferior con barra de progreso lineal de 10 segundos y contador numérico (<code>10s &rarr; 0s</code>).
+      </td>
+      <td>Transmitir peso físico en la acción destructiva y total tranquilidad gracias a la ventana visible para deshacer.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Tabla Comparativa de Micro-copywriting Humanizado para Excepciones (7 Puntos Críticos)</h2>
+
+<p>Se auditaron y reemplazaron los mensajes de excepción técnicos o ambiguos por <strong>micro-copywriting humanizado</strong> (en Español y Quechua) que explica <em>qué pasó, por qué importa y qué hacer a continuación</em>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Punto de Excepción y Ubicación</th>
+      <th>Mensaje Técnico / Genérico Anterior</th>
+      <th>Mensaje Humanizado Visible en Fluye (Español / Quechua)</th>
+      <th>Acción Guiada para el Usuario</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Monto vacío o en cero al intentar guardar</strong><br>(<code>MovementDialog.astro</code> / <code>movements.js</code>)</td>
+      <td class="old-copy">"Error: Monto inválido o vacío."</td>
+      <td class="new-copy">"Ingresa un monto positivo con hasta dos decimales."<br><small>Ayuda contextual: "Escribe un monto positivo. Se aceptan hasta dos decimales." · Botón dinámico: "Ingresa un monto para guardar"</small></td>
+      <td>El botón primario indica exactamente qué dato falta antes siquiera de enviar el formulario.</td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Rango de fechas o montos invertido en filtros</strong><br>(<code>movimientos.astro</code> / <code>movements.js</code>)</td>
+      <td class="old-copy">"Error 400: Rango inválido en parámetros."</td>
+      <td class="new-copy">"Revisa los rangos de fecha y monto. El valor inicial debe ser menor o igual al final."<br><small>Etiqueta superior: "Filtros por corregir" + enlace "Limpiar filtros"</small></td>
+      <td>Explica la regla lógica (inicio &le; fin) y ofrece el enlace directo para restablecer los filtros con un clic.</td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Búsqueda en tabla sin coincidencias</strong><br>(<code>movimientos.astro</code>)</td>
+      <td class="old-copy">"0 resultados encontrados."</td>
+      <td class="new-copy">"No encontramos coincidencias en esta página. Presiona Filtrar o Enter para buscar en todo tu historial."<br><small>Con filtros activos: "Ajusta los filtros para encontrar lo que buscas · Ver todos los movimientos"</small></td>
+      <td>Distingue entre búsqueda rápida en la página actual y búsqueda profunda en toda la base MySQL.</td>
+    </tr>
+    <tr>
+      <td><strong>4</strong></td>
+      <td><strong>Credenciales incorrectas con límite de intentos</strong><br>(<code>index.astro</code> / <code>api/auth/login.js</code>)</td>
+      <td class="old-copy">"Error 401: Unauthorized."</td>
+      <td class="new-copy">"Correo o contraseña incorrectos. Te quedan {count} intentos."<br><small>Ayuda en campo: "Revisa tu correo y contraseña." + enlace "¿Olvidaste tu contraseña?"</small></td>
+      <td>Informa con transparencia cuántos intentos quedan antes del bloqueo temporal de seguridad de 60 s.</td>
+    </tr>
+    <tr>
+      <td><strong>5</strong></td>
+      <td><strong>Intento de editar o exportar con Modo Privacidad activo</strong><br>(<code>movimientos.astro</code> / <code>exportar.js</code>)</td>
+      <td class="old-copy">"Acción bloqueada (403 Forbidden)."</td>
+      <td class="new-copy">"Muestra los montos para editar el movimiento." / "Muestra los montos antes de exportar."</td>
+      <td>Explica por qué se protege la privacidad en pantalla compartida y qué botón pulsar (<em>Mostrar montos</em>) para continuar.</td>
+    </tr>
+    <tr>
+      <td><strong>6</strong></td>
+      <td><strong>Expiración del plazo de 10 segundos para Deshacer</strong><br>(<code>api/movimientos/index.js</code>)</td>
+      <td class="old-copy">"Error 409: Registro no encontrado."</td>
+      <td class="new-copy">"El plazo para deshacer ya terminó."</td>
+      <td>Comunica con claridad que la ventana temporal de 10 segundos concluyó sin mostrar códigos HTTP crudos.</td>
+    </tr>
+    <tr>
+      <td><strong>7</strong></td>
+      <td><strong>Pérdida de conexión a red al guardar un formulario</strong><br>(<code>BaseLayout.astro</code> / <code>finance.js</code>)</td>
+      <td class="old-copy">"Failed to fetch / NetworkError."</td>
+      <td class="new-copy">"No pudimos completar la acción. Comprueba la conexión e inténtalo otra vez."<br><small>Banner superior: "Perdiste la conexión. Tus datos en pantalla están resguardados localmente…"</small></td>
+      <td>Calma al usuario confirmando que su borrador sigue intacto en pantalla y habilita el botón de reintento automático.</td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

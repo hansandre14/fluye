@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+import { getLocale, createTranslator } from '../i18n/index.js';
+import { currentUser } from '../server/auth.js';
+
+Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', 'no-store');
+const locale = getLocale(Astro);
+const t = createTranslator(locale);
+const user = Astro.locals.user ?? await currentUser(Astro).catch(() => null);
+const requestedPath = Astro.url.pathname;
+---
+<BaseLayout title="404 · Ruta no encontrada | Fluye">
+  <main id="main-content" tabindex="-1" class="session-page recovery-error-page">
+    <section class="session-card error-recovery-card" aria-labelledby="error-404-title">
+      <div class="error-recovery-top">
+        <Brand />
+        <span class="error-code-badge" aria-label="Código de estado 404">404 · Ruta no encontrada</span>
+      </div>
+
+      <h1 id="error-404-title">No encontramos esta página, pero tu dinero y tus datos están seguros.</h1>
+      <p class="error-recovery-lead">
+        La dirección <code class="error-path-code">{requestedPath}</code> no existe o cambió de ubicación.
+        No perdiste ningún registro: elige a dónde quieres regresar para continuar sin interrupciones.
+      </p>
+
+      <div class="error-recovery-diagnostics" role="status" aria-live="polite">
+        <strong>✓ Diagnóstico de seguridad:</strong> Tu sesión y tu base de datos MySQL siguen intactas.
+      </div>
+
+      <nav class="error-recovery-actions" aria-label="Opciones de recuperación guiada">
+        {user ? (
+          <>
+            <a class="primary-button error-action-primary" href="/dashboard">Ir a mi Dashboard principal</a>
+            <div class="error-secondary-grid">
+              <a class="finance-pill error-action-pill" href="/registro">+ Registrar un movimiento</a>
+              <a class="finance-pill error-action-pill" href="/movimientos">Ver historial de movimientos</a>
+              <a class="finance-pill error-action-pill" href="/dashboard?cuenta=profesional">Ir a Cuenta Profesional</a>
+            </div>
+          </>
+        ) : (
+          <>
+            <a class="primary-button error-action-primary" href="/">Volver al inicio de sesión</a>
+            <div class="error-secondary-grid">
+              <a class="finance-pill error-action-pill" href="/recuperar">Recuperar mi contraseña</a>
+            </div>
+          </>
+        )}
+      </nav>
+    </section>
+  </main>
+</BaseLayout>

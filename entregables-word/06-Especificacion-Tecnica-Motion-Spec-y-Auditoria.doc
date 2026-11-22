@@ -1,0 +1,168 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Motion Spec Sheet y Auditoría de Movimiento - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.2cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 11pt; }
+  h1 { color: #075e58; font-size: 17pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13.5pt; margin-top: 18px; margin-bottom: 8px; }
+  .meta { background: #e5f1ed; padding: 12px 16px; border-left: 5px solid #0f766e; margin-bottom: 18px; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 8px 10px; border: 1px solid #075e58; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  code { font-family: Consolas, monospace; background: #f1f5f9; padding: 1px 4px; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Especificación Técnica de Motion Design (Motion Spec) y Auditoría de Movimiento en la Plataforma en Astro</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 + Tailwind CSS v4)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)<br>
+  <strong>Tokens Globales Definidos en <code>src/styles/global.css</code>:</strong><br>
+  <code>--motion-fast: 140ms</code> · <code>--motion-medium: 210ms</code> · <code>--motion-exit: 140ms</code> · <code>--ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1)</code>
+</div>
+
+<h2>1. Hoja de Especificación de Movimiento (Motion Spec Sheet — 5 Componentes Interactivos)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Componente Interactivo</th>
+      <th>Duración (ms)</th>
+      <th>Curva de Aceleración (<code>cubic-bezier</code>)</th>
+      <th>Física, Direccionalidad y Propiedades CSS Animadas</th>
+      <th>Objetivo Emocional que Refuerza</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Botones Primarios, Píldoras Ley de Hick (<code>.hick-chip</code>) y Plantillas (<code>.template-chip</code>)</strong></td>
+      <td>
+        • Hover: <strong>140 ms</strong><br>
+        • Pulso de clic: <strong>180 ms</strong>
+      </td>
+      <td>
+        <code>cubic-bezier(0.22, 1, 0.36, 1)</code><br>
+        <small>(Salida ágil al tocar, asentamiento firme sin rebote artificial)</small>
+      </td>
+      <td>
+        • <strong>Hover:</strong> Elevación vertical sutil <code>transform: translateY(-1px)</code> + transición de <code>background-color</code> y <code>border-color</code>.<br>
+        • <strong>Selección (<code>chipConfirmPulse</code>):</strong> Compresión táctil <code>scale(1) &rarr; scale(0.94) &rarr; scale(1.03) &rarr; scale(1)</code>.
+      </td>
+      <td><strong>Velocidad y Respuesta Inmediata</strong></td>
+    </tr>
+    <tr>
+      <td><strong>2. Modales de Registro, Límite Diario y Confirmación de Eliminación (<code>dialog.finance-dialog</code>)</strong></td>
+      <td>
+        • Entrada: <strong>210 ms</strong><br>
+        • Salida: <strong>140 ms</strong>
+      </td>
+      <td>
+        <code>cubic-bezier(0.22, 1, 0.36, 1)</code><br>
+        <small>(Desaceleración suave al asentarse en el centro de la vista)</small>
+      </td>
+      <td>
+        • <strong>Entrada (<code>dialogSettle</code>):</strong> Emerge desde abajo hacia el centro con <code>opacity: 0 &rarr; 1</code> y <code>transform: translateY(8px) scale(0.975) &rarr; translateY(0) scale(1)</code>.<br>
+        • Evita saltos bruscos y mantiene el contexto con <code>::backdrop</code> translúcido.
+      </td>
+      <td><strong>Seguridad y Firmeza Operativa</strong></td>
+    </tr>
+    <tr>
+      <td><strong>3. Menús Desplegables de Filtros en Historial (<code>.filter-popover[open] &gt; div</code>)</strong></td>
+      <td>
+        • Apertura: <strong>160 ms</strong>
+      </td>
+      <td>
+        <code>cubic-bezier(0.22, 1, 0.36, 1)</code><br>
+        <small>(Anclaje espacial directo desde el botón activador)</small>
+      </td>
+      <td>
+        • <strong>Entrada (<code>popoverSettle</code>):</strong> Despliegue descendente desde el borde inferior del <code>&lt;summary&gt;</code> con <code>opacity: 0 &rarr; 1</code> y <code>transform: translateY(-6px) scale(0.98) &rarr; translateY(0) scale(1)</code>.<br>
+        • Cierre automático de otros popovers abiertos para evitar superposición.
+      </td>
+      <td><strong>Claridad Espacial y Orden</strong></td>
+    </tr>
+    <tr>
+      <td><strong>4. Banner Flotante de Confirmación y Deshacer de 10 s (<code>.finance-notice</code>)</strong></td>
+      <td>
+        • Entrada: <strong>220 ms</strong><br>
+        • Salida (<code>.is-hiding</code>): <strong>200 ms</strong><br>
+        • Temporizador: <strong>10000 ms</strong>
+      </td>
+      <td>
+        • Entrada: <code>cubic-bezier(0.16, 1, 0.3, 1)</code><br>
+        • Barra 10s: <code>linear</code>
+      </td>
+      <td>
+        • <strong>Entrada (<code>toastSlideUp</code>):</strong> Sube desde el borde inferior (<code>translate(-50%, 16px) &rarr; translate(-50%, 0)</code>).<br>
+        • <strong>Barra de tiempo (<code>toastTimerShrink</code>):</strong> Contracción horizontal continua <code>scaleX(1) &rarr; scaleX(0)</code> con origen izquierdo (<code>transform-origin: left center</code>).
+      </td>
+      <td><strong>Prevención de Errores y Control Temporal</strong></td>
+    </tr>
+    <tr>
+      <td><strong>5. Botón Destructivo Multimodal (<code>&lt;fluye-delete-button&gt;</code>) y Alertas de Validación</strong></td>
+      <td>
+        • Compresión: <strong>180 ms</strong><br>
+        • Alerta de campo: <strong>220 ms</strong>
+      </td>
+      <td>
+        <code>ease-out</code> / <code>cubic-bezier(0.22, 1, 0.36, 1)</code>
+      </td>
+      <td>
+        • <strong>Confirmación de borrado (<code>sensory-press</code>):</strong> Compresión vertical <code>translateY(2px) scale(0.96)</code> con pérdida de sombra inferior (simulando un botón físico real).<br>
+        • <strong>Error de validación (<code>fieldErrorShake</code>):</strong> Oscilación horizontal contenida <code>0 &rarr; -5px &rarr; +5px &rarr; 0</code>.
+      </td>
+      <td><strong>Seguridad y Reconocimiento del Error</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Registro de Auditoría de Movimiento sobre la Plataforma en Astro</h2>
+
+<p>Durante el recorrido de auditoría sobre la aplicación en Astro se identificaron y corrigieron <strong>3 transiciones bruscas o desconectadas de la Paleta Emocional</strong>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Componente Auditado en Astro</th>
+      <th>Comportamiento Anterior (Desfase Detectado)</th>
+      <th>Ajuste Aplicado conforme a la Motion Spec</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1</strong></td>
+      <td><strong>Apertura de los paneles de filtro (<code>Fecha</code>, <code>Categoría</code>, <code>Monto</code> en <code>/movimientos</code>)</strong></td>
+      <td>El contenedor flotante <code>.filter-popover &gt; div</code> aparecía de forma instantánea (<code>0 ms</code>), generando un salto brusco sobre la tabla de movimientos y desconectando al usuario de qué filtro había pulsado.</td>
+      <td>Se añadió la animación <code>popoverSettle</code> de <strong>160 ms</strong> con curva <code>cubic-bezier(0.22, 1, 0.36, 1)</code> y desplazamiento <code>translateY(-6px) &rarr; 0</code> en <code>src/styles/finance.css</code>.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>2</strong></td>
+      <td><strong>Aparición de los diálogos modales (<code>#movement-dialog</code>, <code>#limit-dialog</code>, <code>#delete-dialog</code>)</strong></td>
+      <td>Al invocar <code>dialog.showModal()</code>, la ventana modal aparecía en pantalla en <code>0 ms</code> sin transición de opacidad ni escala.</td>
+      <td>Se implementó la regla <code>dialog[open] { animation: dialogSettle 210ms cubic-bezier(0.22, 1, 0.36, 1); }</code> en <code>src/styles/global.css</code>, logrando un asentamiento firme y sereno.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>3</strong></td>
+      <td><strong>Aparición de errores de validación en formularios (<code>[data-form-error]</code>)</strong></td>
+      <td>El bloque de error aparecía estático al quitar el atributo <code>hidden</code>; si el usuario miraba el botón de guardar, podía no notar inmediatamente el mensaje de error superior.</td>
+      <td>Se incorporó la microinteracción <code>fieldErrorShake</code> (<strong>220 ms</strong>, <code>&plusmn;5px</code>) en <code>finance.js</code> y <code>global.css</code> sincronizada con el earcon auditivo de alerta.</td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

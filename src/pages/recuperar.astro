@@ -1,0 +1,16 @@
+---
+import RecoveryLayout from '../layouts/RecoveryLayout.astro';
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+Astro.response.headers.set('Cache-Control', 'no-store');
+---
+<RecoveryLayout documentTitleKey="recovery.documentTitle" title={t('recovery.title')} titleKey="recovery.title" description={t('recovery.description')} descriptionKey="recovery.description">
+  <form method="post" action="/api/auth/recuperar" data-recovery>
+    <div class="field">
+      <label for="recovery-email" data-i18n="auth.email">{t('auth.email')}</label>
+      <div class="input-wrap"><input id="recovery-email" type="email" name="email" autocomplete="email" maxlength="254" placeholder={t('auth.emailPlaceholder')} data-i18n-placeholder="auth.emailPlaceholder" required /></div>
+    </div>
+    <p class="status-message" role="status" data-recovery-status hidden></p>
+    <button class="primary-button" type="submit" data-i18n="recovery.send">{t('recovery.send')}</button>
+  </form>
+</RecoveryLayout>

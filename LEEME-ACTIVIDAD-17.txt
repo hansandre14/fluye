@@ -1,0 +1,27 @@
+FLUYE · ACTIVIDAD PRÁCTICA 17
+
+1. Conserva una copia de tu proyecto actual y de tu archivo .env.
+2. Descomprime fluye-main-actividad17.zip. Contiene la carpeta fluye-main actualizada.
+3. Copia sus archivos a:
+   C:\Users\harry\Documents\VIII SEMESTRE\IHC\control-financiero\fluye-main
+   Conserva tu .env y tu configuración local de MySQL.
+4. Abre PowerShell en esa carpeta y ejecuta:
+   npm ci
+   npm run dev
+5. Abre http://127.0.0.1:4321 e inicia sesión con tu cuenta habitual.
+6. En el encabezado selecciona Español o Quechua · Qheswa.
+   La selección se conserva al navegar y los formularios no pierden sus datos.
+7. Para comprobar los diccionarios ejecuta:
+   npm run verify:i18n
+
+Requisitos existentes: Node.js 24 o superior y MySQL 8 disponible.
+Se conservaron Astro 6 y los respaldos originales entregados.
+La actividad, las capturas y la validación se explican en docs/ACTIVIDAD-17.md.
+
+EVIDENCIA FIGMA PENDIENTE:
+La conexión alcanzó el límite de llamadas del plan Starter. Para completar esa
+captura, importa y ejecuta el plugin local docs/figma-l10n-plugin/manifest.json
+en Figma de escritorio siguiendo su README.
+
+El quechua corresponde a la referencia del Cusco. Es una adaptación técnica;
+las frases quedan pendientes de revisión por un hablante de esa variedad.

@@ -1,0 +1,115 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Vistas de Error (404, 500, Sin Red) - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.2cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 11pt; }
+  h1 { color: #075e58; font-size: 17pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13.5pt; margin-top: 18px; margin-bottom: 8px; }
+  .meta { background: #e5f1ed; padding: 12px 16px; border-left: 5px solid #0f766e; margin-bottom: 18px; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 10pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 8px 10px; border: 1px solid #075e58; }
+  td { padding: 8px 10px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+  .ui-box { border: 2px solid #0f766e; background: #f8fafc; padding: 12px 16px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Implementación de Vistas de Error (404, 500, Sin Red) como Experiencias de Recuperación Guiada en Astro</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 SSR + MySQL 8)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)<br>
+  <strong>Archivos Implementados en Astro:</strong> <code>src/pages/404.astro</code>, <code>src/pages/500.astro</code>, <code>src/pages/error-500.astro</code>, <code>src/layouts/BaseLayout.astro</code> y <code>src/scripts/finance.js</code>.
+</div>
+
+<h2>1. Arquitectura de Recuperación Guiada Implementada en Astro</h2>
+
+<p>Para evitar que el usuario quede bloqueado ante una ruta inexistente, un fallo transitorio del servidor o una caída de red, se implementaron tres experiencias de recuperación guiada que preservan la sesión, el tema visual (Claro / Oscuro / Alto Contraste) y el borrador de trabajo:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Escenario de Excepción</th>
+      <th>Archivo / Módulo en Astro</th>
+      <th>Mensaje Humanizado y Diagnóstico de Seguridad</th>
+      <th>Camino de Recuperación Guiada Ofrecido al Usuario</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Error 404 (Ruta No Encontrada)</strong><br>Código HTTP <code>404</code></td>
+      <td><code>src/pages/404.astro</code></td>
+      <td>
+        <strong>Título:</strong> <em>"No encontramos esta página, pero tu dinero y tus datos están seguros."</em><br>
+        Muestra la ruta solicitada (<code>{requestedPath}</code>) y confirma: <em>"✓ Diagnóstico de seguridad: Tu sesión y tu base de datos MySQL siguen intactas."</em>
+      </td>
+      <td>
+        Detecta si hay sesión activa (<code>currentUser(Astro)</code>):<br>
+        • Si está autenticado: botón principal <strong>Ir a mi Dashboard principal</strong> + accesos directos a <strong>+ Registrar un movimiento</strong>, <strong>Ver historial de movimientos</strong> e <strong>Ir a Cuenta Profesional</strong>.<br>
+        • Si no ha iniciado sesión: <strong>Volver al inicio de sesión</strong> y <strong>Recuperar mi contraseña</strong>.
+      </td>
+      <td><span class="badge-ok">100% Funcional</span></td>
+    </tr>
+    <tr>
+      <td><strong>2. Error 500 (Fallo de Servidor / Aplicación)</strong><br>Código HTTP <code>500</code></td>
+      <td><code>src/pages/500.astro</code><br><code>src/pages/error-500.astro</code><br><code>src/pages/api/health.js</code></td>
+      <td>
+        <strong>Título:</strong> <em>"Tuvimos un inconveniente temporal en el servidor."</em><br>
+        Evita mostrar trazas técnicas crudas (stack traces) y garantiza: <em>"🛡️ Protección transaccional activa: Ningún monto fue duplicado ni alterado."</em>
+      </td>
+      <td>
+        Ofrece 4 acciones inmediatas:<br>
+        1. Botón primario <strong>↻ Reintentar operación ahora</strong> (<code>window.location.reload()</code>).<br>
+        2. <strong>Regresar al Dashboard seguro</strong> (<code>/dashboard</code>).<br>
+        3. <strong>Revisar mi historial</strong> (<code>/movimientos</code>).<br>
+        4. <strong>Verificar estado MySQL</strong> (<code>/api/health</code>).
+      </td>
+      <td><span class="badge-ok">100% Funcional</span></td>
+    </tr>
+    <tr>
+      <td><strong>3. Experiencia Sin Red (Offline / Pérdida de Conexión)</strong></td>
+      <td><code>src/layouts/BaseLayout.astro</code><br><code>src/scripts/finance.js</code></td>
+      <td>
+        <strong>Banner superior persistente (<code>role="alert"</code>):</strong><br>
+        <em>"📡 Sin conexión a red · Perdiste la conexión. Tus datos en pantalla están resguardados localmente para evitar pérdida de contexto. Restablece la red y pulsa Reintentar."</em>
+      </td>
+      <td>
+        • <strong>Resguardo automático de contexto:</strong> Mientras el usuario escribe un movimiento, <code>finance.js</code> guarda el borrador en <code>sessionStorage.setItem('fluye_draft_movement', ...)</code>.<br>
+        • Si envía el formulario sin red, marca <code>data-pending-retry="true"</code> sin borrar los campos.<br>
+        • Al volver la red (evento <code>online</code> o clic en <strong>↻ Comprobar red y reintentar</strong>), verifica <code>/api/health</code>, cambia el banner a verde (<em>"✓ Conexión restablecida"</em>) y reenvía la operación pendiente.
+      </td>
+      <td><span class="badge-ok">100% Funcional</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Registro de Validación y Pruebas en el Navegador (Paso a Paso para Demostración)</h2>
+
+<div class="ui-box">
+  <strong>Prueba 1 — Verificación de Vista 404 (Ruta No Encontrada):</strong><br>
+  • <strong>Cómo probarlo:</strong> Hacer clic en el botón <strong>«🧭 Vista 404 Guiada»</strong> dentro del Laboratorio IHC en <code>/registro</code> o escribir cualquier URL inexistente como <code>http://127.0.0.1:4321/ruta-inexistente</code>.<br>
+  • <strong>Resultado verificado:</strong> El servidor responde con código HTTP <code>404</code> (comprobado también por <code>scripts/verify.mjs</code> línea 98), renderiza la tarjeta con el logotipo de Fluye, informa qué ruta falló y permite volver en 1 clic al Dashboard o a Movimientos sin perder la sesión.
+</div>
+
+<div class="ui-box">
+  <strong>Prueba 2 — Verificación de Vista 500 (Fallo de Servidor / Aplicación):</strong><br>
+  • <strong>Cómo probarlo:</strong> Hacer clic en el botón <strong>«⚙️ Vista 500 Guiada»</strong> en el Laboratorio IHC o ingresar a <code>http://127.0.0.1:4321/error-500</code>.<br>
+  • <strong>Resultado verificado:</strong> Muestra la tarjeta de contención transaccional con borde carmesí AAA, confirma que ningún monto fue duplicado en MySQL y ofrece reintento inmediato o retorno seguro al Dashboard.
+</div>
+
+<div class="ui-box">
+  <strong>Prueba 3 — Verificación Sin Red (Modo Offline en DevTools o Simulador Integrado):</strong><br>
+  • <strong>Cómo probarlo:</strong> Abrir <code>/registro</code>, escribir un monto (ej. <code>S/ 45.00</code>) y un concepto, y activar el modo <strong>Offline</strong> en las herramientas de desarrollo del navegador (pestaña <em>Network &rarr; Offline</em>) o pulsar el botón <strong>«📡 Simular Sin Red (Offline)»</strong> en el Laboratorio IHC.<br>
+  • <strong>Resultado verificado:</strong> Se despliega de inmediato el banner rojo superior con sonido multimodal de alerta, el indicador de sincronía cambia a <code>📡 En espera de conexión · Borrador resguardado</code> y los datos escritos permanecen intactos. Al desactivar <em>Offline</em> y pulsar <strong>«↻ Comprobar red y reintentar»</strong>, el banner cambia a verde esmeralda (<code>✓ Conexión restablecida</code>) con acorde de éxito.
+</div>
+
+</body>
+</html>

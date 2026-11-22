@@ -1,0 +1,9 @@
+{
+  "name": "Fluye · Ensayo de localización Act. 17",
+  "id": "fluye-actividad17-l10n-local",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": { "allowedDomains": ["none"] }
+}

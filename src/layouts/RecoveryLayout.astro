@@ -1,0 +1,26 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+const { title, description, titleKey, descriptionKey, documentTitleKey } = Astro.props;
+---
+<BaseLayout title={title + ' | Fluye'} titleKey={documentTitleKey}>
+  <main id="main-content" tabindex="-1" class="access recovery-access">
+    <aside class="intro" aria-label="Fluye">
+      <Brand />
+      <div class="intro-copy"><h1 data-i18n="auth.introTitle">{t('auth.introTitle')}</h1><p data-i18n="recovery.recoverAccess">{t('recovery.recoverAccess')}</p></div>
+    </aside>
+    <section class="login-area" aria-labelledby="recovery-heading">
+      <div class="login-panel">
+        <header class="login-heading">
+          <h2 id="recovery-heading" data-i18n={titleKey}>{title}</h2>
+          <p data-i18n={descriptionKey}>{description}</p>
+        </header>
+        <slot />
+        <p class="signup"><a class="text-button" href="/" data-i18n="recovery.back">{t('recovery.back')}</a></p>
+      </div>
+    </section>
+  </main>
+  <script>import '../scripts/recovery.js';</script>
+</BaseLayout>

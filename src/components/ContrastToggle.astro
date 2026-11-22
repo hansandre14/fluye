@@ -1,0 +1,7 @@
+---
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+---
+<button type="button" class="finance-pill contrast-toggle" data-contrast-toggle aria-pressed="false">
+  <span data-i18n="accessibility.contrast">{t('accessibility.contrast')}</span>
+</button>

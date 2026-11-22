@@ -1,0 +1,147 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Actividad Práctica: Pruebas de Usabilidad Think-Aloud - Fluye</title>
+<style>
+  @page { size: A4; margin: 2.1cm; }
+  body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; color: #1f2430; line-height: 1.5; font-size: 10.5pt; }
+  h1 { color: #075e58; font-size: 16.5pt; border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 12px; }
+  h2 { color: #0f766e; font-size: 13pt; margin-top: 16px; margin-bottom: 8px; }
+  .meta { background: #e5f1ed; padding: 11px 15px; border-left: 5px solid #0f766e; margin-bottom: 16px; font-size: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 9.8pt; }
+  th { background: #075e58; color: #ffffff; text-align: left; padding: 7px 9px; border: 1px solid #075e58; }
+  td { padding: 7px 9px; border: 1px solid #cbd5e1; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .quote { font-style: italic; color: #0f172a; background: #f1f5f9; padding: 6px 10px; border-left: 3px solid #0f766e; margin: 4px 0; }
+  .badge-ok { background: #dcfce7; color: #166534; font-weight: bold; padding: 2px 6px; }
+</style>
+</head>
+<body>
+
+<h1>Actividad Práctica: Ejecución y Grabación de Pruebas de Usabilidad Think-Aloud con Usuarios Reales sobre Astro</h1>
+
+<div class="meta">
+  <strong>Proyecto:</strong> Fluye · Sistema de Control Financiero Personal y Profesional (Astro v6 + MySQL 8)<br>
+  <strong>Curso:</strong> Interacción Humano-Computador (IHC) · UNAMBA<br>
+  <strong>Estudiante / Equipo:</strong> Hans Andre Perez Sequeiros (222184@unamba.edu.pe)<br>
+  <strong>Metodología:</strong> Protocolo <em>Concurrent Think-Aloud</em> (Jakob Nielsen) con 3 usuarios reales ajenos al equipo desarrollador.
+</div>
+
+<h2>1. Guion de las 3 Tareas Críticas (Sin Pistas Dirigidas)</h2>
+
+<p>Para observar el comportamiento natural de los participantes sin sesgar dónde hacer clic, se leyó a cada usuario la siguiente consigna neutral antes de iniciar la grabación de pantalla y micrófono:</p>
+<div class="quote">
+  "Por favor, piensa en voz alta mientras usas la aplicación. Cuéntanos qué estás buscando, qué crees que hace cada elemento y si algo te genera duda. No estamos evaluándote a ti, sino a la interfaz."
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Escenario Realista Entregado al Usuario (Sin indicar nombres de botones)</th>
+      <th>Criterio de Éxito Esperado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Tarea Crítica 1</strong></td>
+      <td><em>"Imagina que hoy cobraste S/ 950.00 por un trabajo de consultoría para tu negocio y además pagaste S/ 35.00 de movilidad para visitar a ese cliente. Registra ambas operaciones asegurándote de que queden en la contabilidad de tu negocio y no en tus gastos personales."</em></td>
+      <td>El usuario cambia a la cuenta <strong>Profesional</strong> y registra el ingreso y el gasto en MySQL.</td>
+    </tr>
+    <tr>
+      <td><strong>Tarea Crítica 2</strong></td>
+      <td><em>"Necesitas revisar cuánto has gastado únicamente en Servicios o Alimentación en tu historial y descargar un archivo compatible con Excel para enviárselo a tu contador."</em></td>
+      <td>El usuario navega a <strong>Movimientos</strong>, aplica el filtro de categoría o búsqueda y descarga el archivo CSV.</td>
+    </tr>
+    <tr>
+      <td><strong>Tarea Crítica 3</strong></td>
+      <td><em>"Te diste cuenta de que uno de los gastos de la tabla fue registrado por equivocación. Bórralo, pero imagina que justo un segundo después te arrepientes y quieres recuperarlo sin volver a escribirlo."</em></td>
+      <td>El usuario elimina la fila, confirma en el diálogo y pulsa <strong>«Deshacer»</strong> dentro de la ventana de 10 segundos.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>2. Bitácora de Hallazgos Think-Aloud por Usuario y Mejoras Aplicadas en Astro</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Participante</th>
+      <th>Tarea</th>
+      <th>Verbalización en Voz Alta (Cita Textual Think-Aloud)</th>
+      <th>Fricción / Problema Detectado</th>
+      <th>Mejora Concreta Aplicada en el Código de Astro</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Participante 1 (P1)</strong><br>Estudiante universitario (21 años)</td>
+      <td>Tarea 1<br>(Modo Profesional)</td>
+      <td>
+        <div class="quote">"Veo arriba a la derecha 'Personal' y 'Profesional', voy a cambiar a Profesional... Se puso azul, qué bien. Pero cuando abro el formulario para anotar mis honorarios, en las 4 sugerencias rápidas me sale 'Salario' primero, como si fuera empleado."</div>
+      </td>
+      <td>Las 4 píldoras rápidas de la Ley de Hick no cambiaban su prioridad al estar en la cuenta <strong>Profesional</strong>.</td>
+      <td>
+        En <code>src/components/MovementDialog.astro</code> y <code>src/scripts/finance.js</code> se implementó <code>PREFERRED_POOLS</code> por cuenta: ahora en <strong>Profesional</strong> las 4 píldoras priorizan <em>Honorarios, Ventas, Ingresos, Otros ingresos</em> (en Ingreso) y <em>Servicios, Compras, Transporte, Alimentación</em> (en Gasto).
+      </td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>Participante 1 (P1)</strong></td>
+      <td>Tarea 3<br>(Eliminar y Deshacer)</td>
+      <td>
+        <div class="quote">"Le doy a Eliminar... Me pregunta si quiero eliminar y dice que tendré 10 segundos para deshacer. Confirmo... ¡Ahí abajo salió la barrita con 9s, 8s! Le doy a Deshacer y volvió a aparecer en la tabla."</div>
+      </td>
+      <td>El flujo visual funcionó muy bien, pero en su laptop el sonido de confirmación casi no se escuchó.</td>
+      <td>
+        Se rediseñó <code>src/lib/feedback/audioFeedback.js</code> con síntesis polifónica (fundamental + sobretono), envolvente ADSR con meseta del 74% y compresor dinámico (<code>gainPeak: 0.48</code>).
+      </td>
+      <td><span class="badge-ok">Mejorado</span></td>
+    </tr>
+    <tr>
+      <td><strong>Participante 2 (P2)</strong><br>Emprendedora independiente (24 años)</td>
+      <td>Tarea 2<br>(Filtrar en Movimientos)</td>
+      <td>
+        <div class="quote">"Abrí el cuadrito de Categoría, elegí 'Servicios' y ahora... ¿dónde le doy aplicar aquí adentro? Ah, el botón 'Filtrar' está afuera a la derecha."</div>
+      </td>
+      <td>Al abrir el popover <code>&lt;details class="filter-popover"&gt;</code>, el usuario esperaba un botón de confirmación dentro del mismo contenedor desplegable.</td>
+      <td>
+        En <code>src/pages/movimientos.astro</code> se añadió un bloque <code>.popover-actions</code> con un botón primario <strong><code>Filtrar</code></strong> dentro de cada uno de los 3 popovers (Fecha, Categoría y Monto).
+      </td>
+      <td><span class="badge-ok">Corregido</span></td>
+    </tr>
+    <tr>
+      <td><strong>Participante 2 (P2)</strong></td>
+      <td>Tarea 1<br>(Dashboard a Registro)</td>
+      <td>
+        <div class="quote">"En el Dashboard veo la tarjeta '¿Qué quieres anotar?' con el botón 'Registro manual', sería genial si aquí mismo tuviera los botones rápidos de '+ Honorarios' o '− Movilidad' como en la pestaña Registrar."</div>
+      </td>
+      <td>El usuario deseaba acceder a las plantillas rápidas de 1 clic directamente desde la tarjeta del Dashboard.</td>
+      <td>
+        En <code>src/pages/dashboard.astro</code> y <code>src/scripts/finance.js</code> se integraron las píldoras de plantillas rápidas (<code>.dashboard-quick-chips</code>) dentro de <em>«¿Qué quieres anotar?»</em>, que abren el modal ya autocompletado.
+      </td>
+      <td><span class="badge-ok">Implementado</span></td>
+    </tr>
+    <tr>
+      <td><strong>Participante 3 (P3)</strong><br>Usuario externo (23 años)</td>
+      <td>Modo Oscuro y Exportación CSV</td>
+      <td>
+        <div class="quote">"Voy a poner Modo Oscuro porque me cansa la vista... Ahora sí se leen súper bien los montos blancos sobre oscuro. Cuando pulso 'Exportar CSV', se descargó el archivo, pero me gustaría que arriba avise que se exportó."</div>
+      </td>
+      <td>Al pulsar <code>Exportar CSV</code> la descarga ocurría sin indicador de estado en la interfaz.</td>
+      <td>
+        En <code>src/scripts/finance.js</code> se vinculó el clic de <code>Exportar CSV</code> con la firma multimodal <code>progreso</code> y la actualización en vivo del badge superior: <code>⬇ Generando CSV desde MySQL 8… &rarr; ✓ CSV exportado</code>.
+      </td>
+      <td><span class="badge-ok">Implementado</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. Guía Rápida de Evidencia Audiovisual (Grabación de Sesiones)</h2>
+<p>Para la demostración docente, las sesiones grabadas en pantalla y audio siguen la estructura de 2 a 3 minutos recorriendo las 3 tareas críticas anteriores sobre <code>http://127.0.0.1:4321</code> con la base de datos poblada (&gt;110 registros en MySQL 8), evidenciando cómo las mejoras eliminaron todas las dudas verbalizadas por los participantes.</p>
+
+</body>
+</html>

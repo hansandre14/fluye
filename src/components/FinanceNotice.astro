@@ -1,0 +1,31 @@
+---
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+const { code, undoId = '', undoMs = 0, returnTo } = Astro.props;
+const labels = {
+  creado: 'notice.created',
+  editado: 'notice.updated',
+  eliminado: undoMs > 0 ? 'notice.deleting' : 'notice.deleted',
+  restaurado: 'notice.restored',
+  limite: 'notice.limit',
+};
+const message = Object.hasOwn(labels, code) ? labels[code] : '';
+const durationMs = undoMs > 0 ? undoMs : 4000;
+const initialSeconds = Math.max(1, Math.ceil(durationMs / 1000));
+---
+{message && <div class:list={['finance-notice', { 'finance-notice-undo': undoMs > 0 }]} data-notice-toast data-duration-ms={durationMs} style={`--toast-duration: ${durationMs}ms`}>
+  <div class="notice-body">
+    <span class="notice-dot" aria-hidden="true"></span>
+    <span class="notice-text" role="status" aria-live="polite" data-i18n={message}>{t(message)}</span>
+    {undoMs > 0 && <span class="notice-countdown" data-undo-seconds aria-hidden="true">{initialSeconds}s</span>}
+    {undoMs > 0 && <form action="/api/movimientos" method="post" data-mutation data-undo-ms={undoMs} class="notice-undo-form">
+      <input type="hidden" name="action" value="deshacer" />
+      <input type="hidden" name="id" value={undoId} />
+      <input type="hidden" name="returnTo" value={returnTo} />
+      <button class="finance-link notice-undo-btn" type="submit" data-i18n="notice.undo">{t('notice.undo')}</button>
+      <p class="finance-error" data-form-error role="alert" hidden></p>
+    </form>}
+    <button type="button" class="notice-close" aria-label={t('notice.close')} data-i18n-aria-label="notice.close" data-close-notice>×</button>
+  </div>
+  <div class="notice-timer-track" aria-hidden="true"><div class="notice-timer-bar"></div></div>
+</div>}

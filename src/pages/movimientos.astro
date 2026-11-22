@@ -1,0 +1,143 @@
+---
+import FinanceLayout from '../layouts/FinanceLayout.astro';
+import FinanceNotice from '../components/FinanceNotice.astro';
+import MovementDialog from '../components/MovementDialog.astro';
+import DeleteButton from '../components/DeleteButton.astro';
+import { currentUser } from '../server/auth.js';
+import { financeReturn, privacyMode } from '../server/finance-http.js';
+import { listMovements, movementById, readFilters, undoRemaining } from '../server/movements.js';
+import { ALL_CATEGORIES, KINDS, accountFrom, dateLabel, soles } from '../lib/finance.js';
+import { getLocale, createTranslator, categoryKey } from '../i18n/index.js';
+const locale = getLocale(Astro);
+const t = createTranslator(locale);
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+const user = Astro.locals.user ?? await currentUser(Astro);
+if (!user) return Astro.redirect('/');
+const params = Astro.url.searchParams;
+const account = accountFrom(params.get('cuenta'));
+const hidden = privacyMode(Astro.cookies);
+const { filters, error } = readFilters(params);
+const { rows, total, page, pages, offset } = error ? { rows: [], total: 0, page: 1, pages: 1, offset: 0 } : await listMovements(user.id, account, filters, params.get('pagina'));
+const clearPath = '/movimientos?cuenta=' + account;
+const current = financeReturn(Astro.url.href, Astro.url.origin, account);
+current.searchParams.set('cuenta', account);
+const returnTo = current.pathname + current.search;
+function withParam(key, value) {
+  const next = new URL(current);
+  next.searchParams.set(key, String(value));
+  return next.pathname + next.search;
+}
+const exportUrl = '/api/movimientos/exportar' + current.search;
+const hasFilters = Object.values(filters).some(Boolean);
+const pageNumbers = Array.from({ length: Math.min(3, pages) }, (_, index) => Math.min(Math.max(1, page - 1), Math.max(1, pages - 2)) + index);
+const editId = params.get('editar');
+const movement = !hidden && editId ? await movementById(user.id, editId) : null;
+const undoId = params.get('deshacer') || '';
+const undoMs = params.get('aviso') === 'eliminado' ? await undoRemaining(user.id, undoId) : 0;
+const subtitleKey = (account === 'profesional' ? 'history.subtitlePro' : 'history.subtitlePersonal') + (total === 1 ? 'One' : '');
+const subtitleParams = { count: total };
+const subtitle = t(subtitleKey, subtitleParams);
+const countParams = { from: offset + 1, to: offset + rows.length, total };
+const countKey = total === 1 ? 'history.countOne' : 'history.count';
+const countLabel = t(countKey, countParams);
+---
+<FinanceLayout title={t('history.title')} titleKey="history.title" {subtitle} {subtitleKey} {subtitleParams} {user} {account} {hidden} page="/movimientos" {returnTo}>
+  <FinanceNotice code={params.get('aviso')} {undoId} {undoMs} {returnTo} />
+  {editId && !movement && <p class="finance-error" role="alert" data-i18n={hidden ? 'history.hiddenEdit' : 'history.unavailable'}>{t(hidden ? 'history.hiddenEdit' : 'history.unavailable')}</p>}
+  <div class="history-toolbar">
+    <form action="/movimientos" method="get" class="history-filters" aria-label={t('history.filters')} data-i18n-aria-label="history.filters" data-history-filter-form>
+      <input type="hidden" name="cuenta" value={account} />
+      <label class="history-search">
+        <span aria-hidden="true">⌕</span>
+        <span class="visually-hidden" data-i18n="history.search">{t('history.search')}</span>
+        <input name="q" type="search" placeholder={t('history.searchPlaceholder')} data-i18n-placeholder="history.searchPlaceholder" value={filters.q} maxlength="100" autocomplete="off" data-live-search />
+      </label>
+      <details class="filter-popover">
+        <summary data-i18n={filters.from || filters.to ? 'history.dateActive' : 'history.date'}>{t(filters.from || filters.to ? 'history.dateActive' : 'history.date')}</summary>
+        <div>
+          <label class="finance-field"><span data-i18n="history.from">{t('history.from')}</span><input name="desde" type="date" value={filters.from} /></label>
+          <label class="finance-field"><span data-i18n="history.to">{t('history.to')}</span><input name="hasta" type="date" value={filters.to} /></label>
+          <div class="popover-actions">
+            <button type="submit" class="primary-button popover-filter-btn" data-i18n="history.filter">{t('history.filter')}</button>
+          </div>
+        </div>
+      </details>
+      <details class="filter-popover">
+        <summary data-i18n={filters.category || filters.kind ? 'history.categoryActive' : 'history.category'}>{t(filters.category || filters.kind ? 'history.categoryActive' : 'history.category')}</summary>
+        <div>
+          <label class="finance-field"><span data-i18n="history.category">{t('history.category')}</span><select name="categoria"><option value="" data-i18n="history.allCategories">{t('history.allCategories')}</option>{ALL_CATEGORIES.map((item) => <option value={item} selected={item === filters.category} data-i18n={categoryKey(item)}>{t(categoryKey(item))}</option>)}</select></label>
+          <label class="finance-field"><span data-i18n="history.kind">{t('history.kind')}</span><select name="tipo"><option value="" data-i18n="history.allKinds">{t('history.allKinds')}</option>{Object.entries(KINDS).map(([key, label]) => <option value={key} selected={key === filters.kind} data-i18n={'kinds.' + key}>{t('kinds.' + key)}</option>)}</select></label>
+          <div class="popover-actions">
+            <button type="submit" class="primary-button popover-filter-btn" data-i18n="history.filter">{t('history.filter')}</button>
+          </div>
+        </div>
+      </details>
+      {!hidden && <details class="filter-popover">
+        <summary data-i18n={filters.min || filters.max ? 'history.amountActive' : 'history.amount'}>{t(filters.min || filters.max ? 'history.amountActive' : 'history.amount')}</summary>
+        <div>
+          <label class="finance-field"><span data-i18n="history.minimum">{t('history.minimum')}</span><input name="min" inputmode="decimal" maxlength="10" value={filters.min} placeholder="0.00" /></label>
+          <label class="finance-field"><span data-i18n="history.maximum">{t('history.maximum')}</span><input name="max" inputmode="decimal" maxlength="10" value={filters.max} placeholder={t('history.unlimited')} data-i18n-placeholder="history.unlimited" /></label>
+          <div class="popover-actions">
+            <button type="submit" class="primary-button popover-filter-btn" data-i18n="history.filter">{t('history.filter')}</button>
+          </div>
+        </div>
+      </details>}
+      <button type="submit" class="finance-pill filter-submit-btn" data-i18n="history.filter">{t('history.filter')}</button>
+    </form>
+    <div class="history-actions">
+      {!hidden && !error && <a class="finance-pill" href={exportUrl} data-i18n="history.export">{t('history.export')}</a>}
+      <button class="primary-button" type="button" data-open-dialog="movement-dialog" data-i18n="history.new">{t('history.new')}</button>
+    </div>
+  </div>
+  {hasFilters && <div class="active-filters"><span data-i18n={error ? 'history.fixFilters' : 'history.appliedFilters'}>{t(error ? 'history.fixFilters' : 'history.appliedFilters')}</span><a class="finance-link" href={clearPath} data-i18n="history.clearFilters">{t('history.clearFilters')}</a></div>}
+  {error && <p class="finance-error" role="alert" data-i18n="history.rangeError">{t('history.rangeError')}</p>}
+  <section class="finance-card history-card" aria-label={t('history.history')} data-i18n-aria-label="history.history">
+    {rows.length ? <div class="table-scroll" tabindex="0" aria-label={t('history.scrollTable')} data-i18n-aria-label="history.scrollTable">
+      <table class="history-table">
+        <thead><tr><th scope="col" data-i18n="history.date">{t('history.date')}</th><th scope="col" data-i18n="history.concept">{t('history.concept')}</th><th scope="col" data-i18n="history.category">{t('history.category')}</th><th scope="col" data-i18n="history.method">{t('history.method')}</th><th scope="col" data-i18n="history.status">{t('history.status')}</th><th scope="col" data-i18n="history.amount">{t('history.amount')}</th><th scope="col" data-i18n="history.actions">{t('history.actions')}</th></tr></thead>
+        <tbody data-history-tbody>{rows.map((row) => <tr data-history-row data-search-text={`${row.concept} ${row.category} ${row.note || ''} ${dateLabel(row.date)} ${(row.amount / 100).toFixed(2)}`}>
+          <td>{dateLabel(row.date)}</td>
+          <td><div class="table-concept"><span class="movement-initial" aria-hidden="true">{row.concept[0].toUpperCase()}</span><div><strong>{row.concept}</strong>{row.note && <small>{row.note}</small>}</div></div></td>
+          <td><span class="table-chip" data-i18n={categoryKey(row.category)}>{t(categoryKey(row.category))}</span></td>
+          <td><span class="table-chip" data-i18n="history.manual">{t('history.manual')}</span></td>
+          <td><span class="table-chip confirmed" data-i18n="history.confirmed">{t('history.confirmed')}</span></td>
+          <td><strong class:list={['amount-text', { positive: row.kind === 'ingreso' }]}>{row.kind === 'ingreso' ? '+' : '−'} {soles(row.amount, hidden)}</strong></td>
+          <td><div class="row-actions">
+            {!hidden && <a class="edit-action" href={withParam('editar', row.id)} data-edit-movement={JSON.stringify({ id: row.id, kind: row.kind, account: row.account, amount: (row.amount / 100).toFixed(2), concept: row.concept, category: row.category, date: row.date, note: row.note, dateLabel: dateLabel(row.date) })} aria-label={t('history.editNamed', {name: row.concept})} data-i18n-aria-label="history.editNamed" data-i18n-params={JSON.stringify({name: row.concept})} data-i18n="history.edit">{t('history.edit')}</a>}
+            <DeleteButton movementId={row.id} movementName={row.concept} label="Eliminar" variant="row" />
+          </div></td>
+        </tr>)}</tbody>
+      </table>
+      <div class="finance-empty" data-live-search-empty hidden>
+        <span class="empty-icon" aria-hidden="true">⌕</span>
+        <h2 data-i18n="history.noPageMatches">{t('history.noPageMatches')}</h2>
+        <p data-i18n="history.searchAll">{t('history.searchAll')}</p>
+      </div>
+    </div> : <div class="finance-empty"><span class="empty-icon" aria-hidden="true">⌕</span>
+      <h2 data-i18n={hasFilters ? 'history.noMatches' : 'history.noMovements'}>{t(hasFilters ? 'history.noMatches' : 'history.noMovements')}</h2>
+      <p data-i18n={hasFilters ? 'history.adjustFilters' : 'history.startHistory'}>{t(hasFilters ? 'history.adjustFilters' : 'history.startHistory')}</p>
+      {hasFilters ? <a class="finance-link" href={clearPath} data-i18n="history.viewAll">{t('history.viewAll')}</a> : <button type="button" class="finance-link" data-open-dialog="movement-dialog" data-i18n="history.register">{t('history.register')}</button>}
+    </div>}
+    {total > 0 && <footer class="history-footer">
+      <p data-history-count data-default-count={countLabel} data-i18n={countKey} data-i18n-params={JSON.stringify(countParams)}>{countLabel}</p>
+      {pages > 1 && <nav class="pagination" aria-label={t('history.pagination')} data-i18n-aria-label="history.pagination">
+        {page > 1 && <a href={withParam('pagina', page - 1)} aria-label={t('history.previous')} data-i18n-aria-label="history.previous">‹</a>}
+        {pageNumbers.map((number) => <a href={withParam('pagina', number)} aria-current={number === page ? 'page' : undefined} aria-label={t('history.page', {number})} data-i18n-aria-label="history.page" data-i18n-params={JSON.stringify({number})}>{number}</a>)}
+        {page < pages && <a href={withParam('pagina', page + 1)} aria-label={t('history.next')} data-i18n-aria-label="history.next">›</a>}
+      </nav>}
+    </footer>}
+  </section>
+  <MovementDialog userId={user.id} {account} {returnTo} {movement} />
+  <dialog class="finance-dialog" id="delete-dialog" aria-labelledby="delete-title">
+    <header class="dialog-heading"><div><h2 id="delete-title" data-i18n="history.deleteTitle">{t('history.deleteTitle')}</h2><p><span data-i18n="history.deleteBefore">{t('history.deleteBefore')}</span> <strong data-delete-name></strong><span data-i18n="history.deleteAfter">{t('history.deleteAfter')}</span></p></div><button class="dialog-x" type="button" aria-label={t('common.close')} data-i18n-aria-label="common.close" data-close-dialog>×</button></header>
+    <form action="/api/movimientos" method="post" data-mutation>
+      <input type="hidden" name="action" value="eliminar" /><input type="hidden" name="id" value="" /><input type="hidden" name="returnTo" value={returnTo} />
+      <p class="finance-error" data-form-error role="alert" hidden></p>
+      <footer class="dialog-actions">
+        <button class="finance-pill" type="button" data-close-dialog autofocus data-i18n="common.cancel">{t('common.cancel')}</button>
+        <DeleteButton label="Eliminar movimiento" variant="confirm" type="submit" />
+      </footer>
+    </form>
+  </dialog>
+</FinanceLayout>

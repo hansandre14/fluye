@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Brand from '../components/Brand.astro';
+import { getLocale, createTranslator } from '../i18n/index.js';
+import { formatCurrency } from '../i18n/format.js';
+const t = createTranslator(getLocale(Astro));
+import { currentUser } from '../server/auth.js';
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (Astro.locals.user ?? await currentUser(Astro)) return Astro.redirect('/dashboard');
+const accountCreated = Astro.url.searchParams.get('cuenta') === 'creada';
+const passwordReset = Astro.url.searchParams.get('clave') === 'actualizada';
+const statusKey = accountCreated ? 'auth.accountCreated' : passwordReset ? 'auth.passwordReset' : '';
+const statusMessage = statusKey ? t(statusKey) : '';
+---
+<BaseLayout title={t('auth.title')} titleKey="auth.title">
+  <main id="main-content" tabindex="-1" class="access">
+    <aside class="intro" aria-label={t('auth.know')} data-i18n-aria-label="auth.know">
+      <Brand />
+      <div class="intro-copy">
+        <h1 data-i18n="auth.introTitle">{t('auth.introTitle')}</h1>
+        <p data-i18n="auth.introDescription">{t('auth.introDescription')}</p>
+      </div>
+      <div class="daily-example" aria-label={t('auth.example', { available: formatCurrency(8700), limit: formatCurrency(15000) })} data-i18n-aria-label="auth.example" data-i18n-params={JSON.stringify({ available: formatCurrency(8700), limit: formatCurrency(15000) })}>
+        <span class="daily-label" data-i18n="auth.spendToday">{t('auth.spendToday')}</span>
+        <div class="daily-amount"><strong>{formatCurrency(8700)}</strong><span data-i18n="auth.dailyExample" data-i18n-params={JSON.stringify({ amount: formatCurrency(15000) })}>{t('auth.dailyExample', { amount: formatCurrency(15000) })}</span></div>
+        <div class="budget-bar" aria-hidden="true"><span></span></div>
+      </div>
+      <ul class="benefits">
+        <li data-i18n="auth.protected">{t('auth.protected')}</li>
+        <li data-i18n="auth.recordBenefit">{t('auth.recordBenefit')}</li>
+        <li data-i18n="auth.historyBenefit">{t('auth.historyBenefit')}</li>
+      </ul>
+    </aside>
+    <section class="login-area" aria-labelledby="login-title">
+      <div class="login-panel">
+        <header class="login-heading"><h2 id="login-title" data-i18n="auth.signInHeading">{t('auth.signInHeading')}</h2><p data-i18n="auth.welcome">{t('auth.welcome')}</p></header>
+        <form id="login-form" action="/api/auth/login" method="post" novalidate>
+          <div class="field">
+            <label for="email" data-i18n="auth.email">{t('auth.email')}</label>
+            <div class="input-wrap"><input id="email" name="email" type="email" placeholder={t('auth.emailPlaceholder')} data-i18n-placeholder="auth.emailPlaceholder" autocomplete="username" required maxlength="254" aria-describedby="email-feedback" /><span id="email-check" class="email-check" aria-hidden="true" hidden>✓</span></div>
+            <p id="email-feedback" class="field-feedback" hidden></p>
+          </div>
+          <div class="field password-field">
+            <label for="password" data-i18n="auth.password">{t('auth.password')}</label>
+            <div class="input-wrap"><input id="password" name="password" type="password" placeholder={t('auth.passwordPlaceholder')} data-i18n-placeholder="auth.passwordPlaceholder" autocomplete="current-password" required maxlength="128" aria-describedby="password-feedback" /><button id="toggle-password" type="button" aria-controls="password" aria-pressed="false" data-i18n="auth.show">{t('auth.show')}</button></div>
+            <p id="password-feedback" class="field-feedback" hidden></p>
+          </div>
+          <div class="form-options">
+            <label class="remember"><input type="checkbox" name="remember" id="remember" /> <span data-i18n="auth.remember">{t('auth.remember')}</span></label>
+            <a class="text-button" href="/recuperar" data-i18n="auth.forgot">{t('auth.forgot')}</a>
+          </div>
+          <p id="login-status" class:list={['status-message', { 'status-success': statusMessage }]} role="status" aria-live="polite" hidden={!statusMessage} data-i18n={statusKey || undefined}>{statusMessage}</p>
+          <button id="submit-login" class="primary-button" type="submit"><span class="spinner" aria-hidden="true" hidden></span><span id="submit-label" data-i18n="auth.signIn">{t('auth.signIn')}</span></button>
+          <noscript><p data-i18n="auth.noScript">{t('auth.noScript')}</p></noscript>
+        </form>
+        <p class="signup"><span data-i18n="auth.noAccount">{t('auth.noAccount')}</span> <button type="button" class="text-button" data-open-setup data-i18n="auth.create">{t('auth.create')}</button></p>
+      </div>
+    </section>
+  </main>
+  <dialog id="setup-dialog" aria-labelledby="setup-title">
+    <h2 id="setup-title" data-i18n="auth.create">{t('auth.create')}</h2>
+    <p data-i18n="auth.setupDescription">{t('auth.setupDescription')}</p>
+    <form id="setup-form" action="/api/auth/setup" method="post">
+      <div class="field"><label for="setup-name" data-i18n="auth.name">{t('auth.name')}</label><div class="input-wrap"><input id="setup-name" name="name" autocomplete="name" minlength="2" maxlength="80" required /></div></div>
+      <div class="field"><label for="setup-email" data-i18n="auth.yourEmail">{t('auth.yourEmail')}</label><div class="input-wrap"><input id="setup-email" name="email" type="email" autocomplete="username" maxlength="254" required /></div></div>
+      <div class="field"><label for="setup-password" data-i18n="auth.choosePassword">{t('auth.choosePassword')}</label><div class="input-wrap"><input id="setup-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" aria-describedby="setup-password-help" required /></div><p id="setup-password-help" class="password-help" data-i18n="auth.passwordHelp">{t('auth.passwordHelp')}</p></div>
+      <div class="field"><label for="setup-confirm" data-i18n="auth.confirm">{t('auth.confirm')}</label><div class="input-wrap"><input id="setup-confirm" name="confirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" required /></div></div>
+      <p id="setup-status" class="status-message" role="status" hidden></p>
+      <button class="primary-button" type="submit" id="setup-submit" data-i18n="auth.saveAccount">{t('auth.saveAccount')}</button>
+      <button class="text-button setup-cancel" type="button" id="setup-cancel" data-i18n="common.cancel">{t('common.cancel')}</button>
+    </form>
+  </dialog>
+  <script>import '../scripts/login.js'; import '../scripts/setup.js';</script>
+</BaseLayout>
