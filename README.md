@@ -39,7 +39,7 @@ fluye/
 
 El módulo [`src/server/database.js`](./src/server/database.js) detecta automáticamente la configuración local de MySQL al iniciar:
 - **PC 1**: `127.0.0.1:3307` (`user: root`, `password: 74042894`)
-- **PC 2**: `127.0.0.1:3306` (`user: root`, sin contraseña)
+- **PC 2**: `127.0.0.1:3308` (`user: root`, `password: mysqlhc`)
 
 1. Instalar dependencias (solo la primera vez):
    ```bash
