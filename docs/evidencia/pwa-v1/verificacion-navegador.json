@@ -1,0 +1,19 @@
+{
+  "installability": {
+    "installabilityErrors": []
+  },
+  "cachePaths": [
+    "/offline.html",
+    "/instalar.html",
+    "/pwa/offline.css",
+    "/pwa/offline.js",
+    "/manifest.webmanifest",
+    "/icons/fluye.svg",
+    "/icons/fluye-192.png",
+    "/icons/fluye-512.png",
+    "/icons/fluye-maskable-512.png",
+    "/icons/apple-touch-icon.png"
+  ],
+  "offlineNavigation": true,
+  "offlineHelp": true
+}

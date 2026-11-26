@@ -38,8 +38,8 @@ fluye/
 ## Ejecución rápida (compatible entre compañeros sin tocar configuración)
 
 El módulo [`src/server/database.js`](./src/server/database.js) detecta automáticamente la configuración local de MySQL al iniciar:
-- **PC 1**: `127.0.0.1:3307` (`user: root`, `password: 74042894`)
-- **PC 2**: `127.0.0.1:3308` (`user: root`, `password: mysqlhc`)
+- **PC 1**: `127.0.0.1:3307` (usuario y contraseña en tu `.env` local).
+- **PC 2**: `127.0.0.1:3308` (usuario y contraseña en tu `.env` local).
 
 1. Instalar dependencias (solo la primera vez):
    ```bash
@@ -58,3 +58,7 @@ Selector de idioma en el encabezado, diccionarios JSON, traducción sin recargar
 ## Actividad práctica 18 · Diseño inclusivo
 
 Modo Alto contraste persistente, navegación por teclado y depuración visual. [Matriz de inclusión, auditoría y guía de comprobación](docs/ACTIVIDAD-18.md).
+
+## Primera versión PWA
+
+Aplicación instalable con pantalla pública sin conexión. Compilar con `npm run build`, iniciar con `npm start` y abrir `http://127.0.0.1:4321/`. La lógica financiera requiere servidor y MySQL. El service worker se habilita solo en producción. Guía: [PWA v1](docs/PWA-V1.html).

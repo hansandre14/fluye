@@ -379,5 +379,9 @@
     "contrast": "Alto contraste",
     "skip": "Saltar al contenido",
     "preferences": "Opciones de lectura"
+  },
+  "pwa": {
+    "install": "Instalar Fluye",
+    "help": "Instalar / Ayuda"
   }
 }

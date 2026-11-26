@@ -3,7 +3,9 @@ import '@fontsource-variable/fredoka';
 import '@fontsource-variable/nunito';
 import '../styles/global.css';
 import '../styles/inclusive.css';
+import '../styles/mobile-pwa.css';
 import ContrastToggle from '../components/ContrastToggle.astro';
+import PwaInstall from '../components/PwaInstall.astro';
 import LanguageSelector from '../components/LanguageSelector.astro';
 import { getLocale, createTranslator } from '../i18n/index.js';
 const { title, titleKey, titleParams = {}, finance = false } = Astro.props;
@@ -13,7 +15,13 @@ const t = createTranslator(locale);
 <!doctype html>
 <html lang={locale + '-PE'} data-locale={locale} data-theme="light">
   <head>
-    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/fluye.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Fluye" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="robots" content="noindex, nofollow" /><meta name="theme-color" content="#0f766e" />
     <title data-i18n={titleKey} data-i18n-params={JSON.stringify(titleParams)}>{titleKey ? t(titleKey, titleParams) : title}</title>
     <script is:inline>
@@ -35,7 +43,7 @@ const t = createTranslator(locale);
     {!finance && (
       <header class="public-language-header" aria-label={t('accessibility.preferences')} data-i18n-aria-label="accessibility.preferences">
         <LanguageSelector id="public-language" />
-        <ContrastToggle />
+        <ContrastToggle /><PwaInstall />
         <button
           type="button"
           class="global-theme-fab"
@@ -66,6 +74,7 @@ const t = createTranslator(locale);
       import { setText } from '../i18n/client.js';
       import { triggerSignature } from '../lib/feedback/audioFeedback.js';
       import '../scripts/inclusive.js';
+      import '../scripts/pwa.js';
       (() => {
         function syncThemeButtons() {
           const isDark = document.documentElement.dataset.theme === 'dark';

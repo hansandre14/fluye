@@ -1,6 +1,7 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import ContrastToggle from '../components/ContrastToggle.astro';
+import PwaInstall from '../components/PwaInstall.astro';
 import '../styles/finance.css';
 import { ACCOUNTS } from '../lib/finance.js';
 import LanguageSelector from '../components/LanguageSelector.astro';
@@ -26,7 +27,7 @@ const isPro = account === 'profesional';
         <div class="regional-info"><span data-i18n="language.region">{t('language.region')}</span><time data-regional-clock>{formatRegionalNow()}</time></div>
       </div>
       <div class="finance-controls">
-        <LanguageSelector id="finance-language" /><ContrastToggle />
+        <LanguageSelector id="finance-language" /><ContrastToggle /><PwaInstall />
         <button
           type="button"
           class="finance-pill theme-toggle-pill"

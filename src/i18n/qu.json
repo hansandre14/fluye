@@ -379,5 +379,9 @@
     "contrast": "Aswan sut’i rikuy",
     "skip": "Ukuman riy",
     "preferences": "Ñawinchay akllanakuna"
+  },
+  "pwa": {
+    "install": "Fluye churay",
+    "help": "Churay / Yanapay"
   }
 }

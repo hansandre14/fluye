@@ -1,6 +1,6 @@
 import { json, normalizeEmail, sameOrigin, validEmail } from '../../../server/auth.js';
 import { mailConfig } from '../../../server/mail.js';
-import { createLocalRecoveryToken, deliverRecovery } from '../../../server/recovery.js';
+import { deliverRecovery } from '../../../server/recovery.js';
 import { takeRequest } from '../../../server/request-limits.js';
 
 export async function POST({ request, url, clientAddress }) {
@@ -11,16 +11,7 @@ export async function POST({ request, url, clientAddress }) {
   const email = typeof data.get('email') === 'string' ? normalizeEmail(data.get('email')) : '';
   if (!validEmail(email)) return json({ message: 'Escribe un correo electrónico válido.' }, 400);
   const config = mailConfig();
-  if (!config) {
-    const token = await createLocalRecoveryToken(email);
-    if (!token) {
-      return json({ message: 'No encontramos una cuenta registrada con ese correo electrónico. Verifica el correo e inténtalo de nuevo.' }, 404);
-    }
-    return json({
-      message: 'Cuenta verificada correctamente. Redirigiendo para crear tu contraseña nueva…',
-      resetUrl: `/restablecer#token=${token}`,
-    }, 202);
-  }
+  if (!config) return json({ message: 'El correo de recuperación no está disponible en esta instalación. Intenta más tarde.' }, 503);
   const ipAllowed = await takeRequest('recovery-ip', clientAddress, 10, 900000);
   if (ipAllowed && await takeRequest('recovery-email', email, 1, 60000)) {
     // El envío no bloquea la respuesta ni permite deducir si existe el correo.

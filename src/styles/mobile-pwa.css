@@ -1,0 +1,26 @@
+/* PWA móvil: espacio para notch, bordes del dispositivo y gesto de inicio. */
+@media (max-width: 790px) {
+  .finance-shell {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-top: calc(23px + env(safe-area-inset-top));
+    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+  }
+  .finance-nav { bottom: calc(18px + env(safe-area-inset-bottom)); }
+  .finance-notice { bottom: calc(110px + env(safe-area-inset-bottom)); }
+  .public-language-header {
+    padding-top: calc(14px + env(safe-area-inset-top));
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    gap: 8px;
+  }
+  .public-language-header > * { min-width: 0; max-width: 100%; }
+  .public-language-header .language-selector { flex: 1 1 100%; }
+  .public-language-header :is(button, a) { font-size: 14px; }
+  .session-page { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+  .login-area { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+}
+@media (display-mode: standalone) {
+  html { overscroll-behavior-y: none; }
+  [data-pwa-install] { display: none !important; }
+}

@@ -12,7 +12,8 @@
     "start": "node ./dist/server/entry.mjs",
     "preverify": "npm run build",
     "verify": "node ./scripts/verify.mjs",
-    "verify:i18n": "node scripts/verify-i18n.mjs"
+    "verify:i18n": "node scripts/verify-i18n.mjs",
+    "verify:pwa": "node --test scripts/verify-pwa.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^10.0.0",

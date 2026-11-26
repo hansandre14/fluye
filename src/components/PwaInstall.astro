@@ -1,0 +1,6 @@
+---
+import { getLocale, createTranslator } from '../i18n/index.js';
+const t = createTranslator(getLocale(Astro));
+---
+<button type="button" class="finance-pill contrast-toggle" data-pwa-install hidden data-i18n="pwa.install">{t('pwa.install')}</button>
+<a class="finance-pill contrast-toggle" href="/instalar.html" data-i18n="pwa.help">{t('pwa.help')}</a>

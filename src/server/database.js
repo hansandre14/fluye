@@ -219,6 +219,8 @@ function buildExtensiveSeedMovements() {
 
 async function importLegacyAndBackup(pool, config) {
   if (config.database.endsWith('_pruebas')) return;
+  // La vista pública temporal no importa respaldos ni agrega cuentas o datos demo.
+  if (loadEnvironment().FLUYE_SKIP_DEMO_IMPORT === '1') return;
 
   await pool.query('DELETE FROM login_attempts').catch(() => {});
 
